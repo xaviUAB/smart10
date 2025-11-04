@@ -517,15 +517,24 @@
         }
         
         function updateTurnIndicator() {
-            const turnElement = document.getElementById('current-player-turn');
-            if (turnElement) {
+            const textContainer = document.getElementById('turn-indicator-text-container');
+            
+            if (textContainer) {
                 const currentPlayer = players[currentPlayerIndex];
+                
                 if (currentPlayer.passed) {
-                    // Missatge sense punts acumulats
-                    turnElement.textContent = `${currentPlayer.name} ha fallat i és fora de la ronda.`;
+                    textContainer.innerHTML = `
+                        <h3 class="text-lg font-bold text-red-300">
+                            ${currentPlayer.name} ha fallat i és fora de la ronda.
+                        </h3>
+                    `;
                 } else {
-                    // Missatge sense punts acumulats
-                    turnElement.textContent = `Et toca, ${currentPlayer.name}`; 
+                    // MODIFICACIÓ CLAU: Nova frase indicadora
+                    textContainer.innerHTML = `
+                        <h3 id="current-player-turn" class="text-xl font-extrabold text-white">
+                            Et toca, ${currentPlayer.name}!
+                        </h3>
+                    `;
                 }
             }
         }
@@ -634,9 +643,10 @@
             for (let i = 0; i < activeOptions.length; i++) {
                 const opt = activeOptions[i];
                 
+                // REVERTIT: Tornat a text-amber-200 (o similar) per la lletra de l'opció.
                 const optionHtml = `
-                    <div id="container-${opt.id}" class="flex items-center justify-between p-3 bg-white rounded-lg shadow-md border border-gray-200">
-                        <span class="text-sm font-medium text-gray-900 break-words pr-2 flex-1">${opt.option}</span>
+                    <div id="container-${opt.id}" class="flex items-center justify-between p-3 bg-orange-800 rounded-lg shadow-md border border-orange-700">
+                        <span class="text-sm font-bold text-amber-200 break-words pr-2 flex-1">${opt.option}</span>
                         <div id="option-${opt.id}" class="flex-shrink-0">
                             <!-- Botó de disc 3D -->
                             <div class="option-button" 
@@ -656,12 +666,15 @@
             const roundScore = currentPlayer.currentRoundScore;
 
             const htmlContent = `
-                <!-- TORN DEL JUGADOR I BOTÓ PASSO COMBINATS -->
-                <div id="turn-and-pass-container" class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-3 bg-white rounded-lg shadow-md border border-gray-200">
+                <!-- TORN DEL JUGADOR I BOTÓ PASSO COMBINATS (Fons fosc per destacar la instrucció) -->
+                <div id="turn-and-pass-container" class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-3 bg-orange-800 rounded-lg shadow-md border border-orange-700">
                     <!-- TORN INDICATOR (Left) -->
-                    <h3 id="current-player-turn" class="text-lg font-bold text-orange-800 text-center sm:text-left flex-1">
-                        Et toca, ${currentPlayer.name}
-                    </h3>
+                    <div class="text-center sm:text-left flex-1" id="turn-indicator-text-container">
+                        <!-- MODIFICACIÓ CLAU: Nova frase indicadora -->
+                        <h3 id="current-player-turn" class="text-xl font-extrabold text-white">
+                            Et toca, ${currentPlayer.name}!
+                        </h3>
+                    </div>
 
                     <!-- PASSO BUTTON (Right) -->
                     <div class="flex flex-col items-center sm:items-end flex-shrink-0 w-full sm:w-auto">
@@ -704,6 +717,8 @@
 
             quizArea.innerHTML = htmlContent;
             updateScoreboard(); 
+            // Cridar updateTurnIndicator aquí també assegura que la frase es mostra immediatament
+            updateTurnIndicator(); 
         }
 
         function endRound() {
