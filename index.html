@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART 10 Digital</title>
+    <!-- Inclou Tailwind CSS per a l'estil -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuració de font global */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        /* Estil per al botó rodó negre */
+        .option-button {
+            width: 28px;
+            height: 28px;
+            background-color: #1f2937; /* Gris fosc gairebé negre */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.15s, transform 0.15s;
+            flex-shrink: 0;
+            user-select: none; /* Evita la selecció del text "?" */
+        }
+        .option-button:hover {
+            background-color: #374151;
+            transform: scale(1.05);
+        }
+        /* Estil per a les opcions ja revelades */
+        .revealed {
+            cursor: default;
+        }
+        .revealed .option-button {
+            pointer-events: none; /* Deshabilita el clic un cop revelat */
+            opacity: 0.6;
+        }
+
+        /* Estil per al Modal (Quadre de Diàleg Personalitzat) */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Ocult per defecte */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex items-start justify-center min-h-screen">
+
+    <div class="w-full max-w-4xl bg-white shadow-xl rounded-xl p-6 md:p-10 border border-gray-100">
+
+        <!-- Títol -->
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-indigo-500 pb-2">
+            SMART 10 Digital
+        </h1>
+
+        <!-- Puntuació dels Jugadors (Sempre visible) -->
+        <div id="scoreboard" class="mb-6 p-3 bg-gray-100 rounded-lg shadow-inner">
+            <h2 class="text-lg font-semibold text-gray-700 mb-2">Marcador</h2>
+            <div id="player-scores" class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
+                <!-- Puntuacions generades per JS -->
+            </div>
+        </div>
+        
+        <!-- Àrea de Configuració Inicial (Per defecte, visible) -->
+        <div id="setup-area" class="p-6 bg-yellow-50 rounded-lg border-l-4 border-yellow-600 mb-8">
+            <h2 class="text-xl font-bold text-yellow-800 mb-4">Configuració del Joc</h2>
+            
+            <label for="playerCount" class="block text-sm font-medium text-gray-700 mb-2">Nombre de Jugadors (1 a 4):</label>
+            <select id="playerCount" onchange="generateNameInputs()" class="mb-4 p-2 border rounded-lg w-full md:w-auto">
+                <option value="1">1 Jugador</option>
+                <option value="2">2 Jugadors</option>
+                <option value="3">3 Jugadors</option>
+                <option value="4">4 Jugadors</option>
+            </select>
+            
+            <div id="nameInputs" class="space-y-3 mb-6">
+                <!-- Inputs de nom generats per JS -->
+            </div>
+            
+            <button onclick="startGameSetup()" id="start-setup-btn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">
+                Guardar Noms i Continuar
+            </button>
+        </div>
+
+        <!-- Àrea de Càrrega i Joc (Inicialment, ocult) -->
+        <div id="game-area" style="display:none;">
+            <!-- Input del Fitxer (Ocultat un cop carregat) -->
+            <div class="mb-8 p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-600" id="file-input-container">
+                <label for="csvFile" class="block text-lg font-medium text-gray-700 mb-3">
+                    1. Selecciona el teu fitxer de dades CSV (separat per punt i coma):
+                </label>
+                <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-indigo-500 file:text-white
+                    hover:file:bg-indigo-600 transition duration-150 cursor-pointer"
+                    onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- Àrea del Quiz / Pregunta -->
+            <div id="quiz-area" class="min-h-[100px]">
+                <p class="text-gray-500 italic" id="initial-message">Carrega un fitxer CSV per començar el joc de preguntes.</p>
+            </div>
+
+            <!-- Botó "Passo" i contenidor de missatges -->
+            <div class="mt-8 text-center" id="pass-button-container" style="display:none;">
+                <p id="round-message" class="text-sm font-medium text-gray-600 mb-3"></p>
+                <button onclick="playerPasses()" id="pass-btn" class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150">
+                    Passo (Guardar ${} punts)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUADRE DE DIÀLEG PERSONALITZAT (MODAL) -->
+    <div id="quiz-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Revisió de la Resposta</h3>
+            
+            <!-- Resposta correcta mostrada al modal -->
+            <p id="correct-answer-text" class="text-lg text-gray-700 mb-4 p-3 bg-gray-100 rounded-lg text-center font-mono"></p>
+
+            <p class="font-semibold text-gray-800 mb-4 text-center">Has encertat?</p>
+
+            <div class="flex justify-around space-x-4">
+                <button onclick="closeModal(true)" class="flex-1 px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
+                    Sí, he encertat!
+                </button>
+                <button onclick="closeModal(false)" class="flex-1 px-4 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">
+                    No, he fallat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- VARIABLES GLOBALS ---
+        let csvData = [];
+        let availableQuestionIndices = []; // NOVA: Pool d'índexs de preguntes no utilitzades
+        let players = [];
+        let currentPlayerIndex = 0;
+        let activeQuestionId = null; 
+        let revealedAnswersCount = 0; 
+        let activeOptions = []; // Array d'objectes { id: ..., isRevealed: boolean } per fer seguiment
+
+        // --- CONFIGURACIÓ DE LES COLUMNES (0-based) ---
+        const QUESTION_INDEX = 1; 
+        const OPTION_INDICES = [3, 5, 7, 9, 11, 13, 15, 17, 19, 21]; 
+        const CSV_DELIMITER = ';'; 
+        const WINNING_SCORE = 30; // Puntuació mínima per acabar la partida
+        
+        // --- FASE 1: CONFIGURACIÓ DELS JUGADORS ---
+
+        window.onload = function() {
+            generateNameInputs(); 
+        };
+
+        function generateNameInputs() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            const container = document.getElementById('nameInputs');
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `
+                    <div>
+                        <label for="player${i+1}Name" class="block text-sm font-medium text-gray-700">Nom Jugador ${i+1}:</label>
+                        <input type="text" id="player${i+1}Name" value="Jugador ${i+1}" 
+                               class="p-2 border border-gray-300 rounded-lg w-full mt-1 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                `;
+            }
+        }
+
+        function startGameSetup() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            players = [];
+
+            for (let i = 0; i < count; i++) {
+                const nameInput = document.getElementById(`player${i+1}Name`);
+                const name = nameInput.value.trim() || `Jugador ${i+1}`;
+                
+                players.push({
+                    id: i,
+                    name: name,
+                    score: 0, // Puntuació total
+                    currentRoundScore: 0, // Puntuació acumulada en la ronda actual
+                    passed: false // Indica si el jugador ha passat o ha estat eliminat en aquesta ronda
+                });
+            }
+
+            document.getElementById('setup-area').style.display = 'none';
+            document.getElementById('game-area').style.display = 'block';
+            
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            const scoreContainer = document.getElementById('player-scores');
+            scoreContainer.innerHTML = '';
+
+            let maxScore = -1;
+            if (players.length > 0) {
+                maxScore = Math.max(...players.map(p => p.score));
+            }
+
+            players.forEach((player, index) => {
+                const isActive = index === currentPlayerIndex && !player.passed;
+                const isLeading = player.score > 0 && player.score === maxScore;
+                
+                // Mostra la puntuació de ronda entre parèntesis si és més gran que zero
+                const roundPointsDisplay = player.currentRoundScore > 0 ? ` (+${player.currentRoundScore})` : '';
+
+                scoreContainer.innerHTML += `
+                    <span id="score-${player.id}" 
+                          class="px-3 py-1 rounded-full text-xs font-bold transition duration-300 flex items-center 
+                          ${isActive ? 'bg-indigo-500 text-white shadow-md' : 'bg-gray-200 text-gray-700'}">
+                        ${isLeading ? '👑 ' : ''}
+                        ${player.name}: ${player.score} punts${roundPointsDisplay}
+                        ${player.passed ? ' (FORA)' : ''}
+                    </span>
+                `;
+            });
+            
+            updatePassButton();
+        }
+        
+        function updateTurnIndicator() {
+            const turnElement = document.getElementById('current-player-turn');
+            if (turnElement) {
+                const currentPlayer = players[currentPlayerIndex];
+                if (currentPlayer.passed) {
+                    turnElement.textContent = `${currentPlayer.name} ha passat o ha estat eliminat. Cercant següent...`;
+                } else {
+                    turnElement.textContent = `Et toca, ${currentPlayer.name} (acumules ${currentPlayer.currentRoundScore} p.)`; 
+                }
+            }
+        }
+
+        function updatePassButton() {
+            const passBtn = document.getElementById('pass-btn');
+            const currentPlayer = players[currentPlayerIndex];
+
+            if (currentPlayer.passed) {
+                // Si el jugador actual ja ha passat/està eliminat, no s'hauria de veure el botó, però per si de cas...
+                passBtn.disabled = true;
+                passBtn.textContent = 'Fora de la Ronda';
+            } else {
+                passBtn.disabled = false;
+                const roundScore = currentPlayer.currentRoundScore;
+                passBtn.textContent = `Passo (Guardar ${roundScore} punt${roundScore === 1 ? '' : 's'})`;
+
+                const roundMessage = document.getElementById('round-message');
+                roundMessage.textContent = roundScore > 0 ? 
+                    `Si passes ara, guardaràs ${roundScore} punt${roundScore === 1 ? '' : 's'}.` :
+                    `Si passes ara, no guardaràs cap punt de la ronda.`;
+            }
+        }
+
+        // Tria el següent jugador actiu que no hagi passat/estigui eliminat
+        function nextPlayer() {
+            // Passem al següent jugador en la seqüència
+            let nextIndex = (currentPlayerIndex + 1) % players.length;
+            let initialIndex = nextIndex;
+            
+            // Busquem el següent jugador que NO hagi passat
+            while (players[nextIndex].passed) {
+                nextIndex = (nextIndex + 1) % players.length;
+                
+                // Si tornem a l'índex inicial i encara hem trobat un jugador que ha passat,
+                // significa que tots els jugadors estan marcats com a "passats".
+                if (nextIndex === initialIndex) {
+                    // La ronda ha d'acabar, ja que no hi ha jugadors actius
+                    endRound();
+                    return; 
+                }
+            }
+
+            currentPlayerIndex = nextIndex;
+            updateScoreboard();
+            updateTurnIndicator(); 
+            updatePassButton();
+        }
+        
+        // --- LÒGICA DE PASSO ---
+        function playerPasses() {
+            const currentPlayer = players[currentPlayerIndex];
+            
+            // 1. Suma els punts de la ronda a la puntuació total
+            currentPlayer.score += currentPlayer.currentRoundScore;
+            
+            // 2. Reseteja la puntuació de ronda i marca com a passat
+            currentPlayer.currentRoundScore = 0;
+            currentPlayer.passed = true;
+            
+            // 3. Comprova si la ronda ha acabat o canvia de torn
+            const activePlayers = players.filter(p => !p.passed);
+            
+            if (activePlayers.length === 0) {
+                // Si tots han passat, la ronda s'acaba. currentPlayerIndex apunta a qui va passar últim.
+                endRound();
+            } else {
+                // Si no, anem al següent jugador actiu
+                nextPlayer();
+            }
+        }
+
+
+        // --- FUNCIÓ PER BARREJAR ARRAYS (Fisher-Yates Shuffle) ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; 
+            }
+        }
+
+        // --- FASE 2: CÀRREGA DE CSV ---
+        
+        function displayMessage(text, isError = false) {
+            const quizArea = document.getElementById('quiz-area');
+            quizArea.innerHTML = `<p class="${isError ? 'text-red-500 font-bold' : 'text-gray-500 italic'}" id="message">${text}</p>`;
+            document.getElementById('pass-button-container').style.display = 'none';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+
+            if (!file) {
+                displayMessage("Carrega un fitxer CSV per començar.");
+                return;
+            }
+
+            if (file.type && file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
+                 displayMessage("Tipus de fitxer no vàlid. Si us plau, selecciona un fitxer CSV.", true);
+                 event.target.value = '';
+                 return;
+            }
+
+            displayMessage("Processant dades...");
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const csvText = e.target.result;
+                loadCSVData(csvText);
+            };
+
+            reader.onerror = function() {
+                displayMessage("Error en llegir el fitxer.", true);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function loadCSVData(csvText) {
+            const rows = csvText.trim().split('\n').filter(row => row.trim() !== "");
+
+            if (rows.length < 2) {
+                displayMessage("El fitxer CSV ha de contenir almenys una fila de dades i la capçalera.", true);
+                return;
+            }
+
+            // Utilitza el punt i coma com a delimitador
+            const data = rows.map(row => {
+                const values = row.match(/(".*?"|[^;]+)(?=;|\n|$)/g) || [];
+                return values.map(v => v.trim().replace(/^"|"$/g, ''));
+            });
+            
+            csvData = data.slice(1);
+            
+            // Inicialitza el pool d'índexs disponibles i el barreja (per evitar repeticions)
+            availableQuestionIndices = csvData.map((_, index) => index);
+            shuffleArray(availableQuestionIndices); 
+
+            if (csvData.length > 0) {
+                document.getElementById('file-input-container').style.display = 'none';
+            }
+            
+            startQuiz(csvData);
+        }
+
+        // --- FASE 3: JOC DE PREGUNTES ---
+        
+        function startQuiz(data) {
+            if (data.length === 0) {
+                displayMessage("No hi ha dades disponibles per al joc de preguntes.", true);
+                return;
+            }
+            
+            // CANVI: Comprova si queden preguntes disponibles
+            if (availableQuestionIndices.length === 0) {
+                displayMessage("S'han esgotat totes les preguntes. No es pot continuar jugant.", true);
+                document.getElementById('pass-button-container').style.display = 'none';
+                return; 
+            }
+
+            // 1. Reset de la ronda
+            revealedAnswersCount = 0; 
+            activeOptions = [];
+            players.forEach(p => {
+                p.currentRoundScore = 0;
+                p.passed = false;
+            });
+            
+            // 2. Tria un registre usant l'índex del pool (sense repetició)
+            const selectedIndexInCsv = availableQuestionIndices.pop(); // Traiem el darrer índex del pool barrejat
+            const selectedRow = data[selectedIndexInCsv];
+
+            const question = selectedRow[QUESTION_INDEX] || "Pregunta no disponible";
+            const options = [];
+            
+            OPTION_INDICES.forEach((optionIndex, i) => {
+                const correctIndex = optionIndex + 1;
+                
+                if (selectedRow.length > correctIndex && selectedRow[optionIndex] && selectedRow[correctIndex]) {
+                    options.push({
+                        option: selectedRow[optionIndex],
+                        correctAnswer: selectedRow[correctIndex],
+                        id: `opt-${i}`,
+                        isRevealed: false
+                    });
+                }
+            });
+            
+            if (options.length < 1) {
+                displayMessage(`El registre triat no conté opcions suficients.`, true);
+                // NOTA: No cal tornar a posar l'índex al pool ja que no es pot jugar.
+                return;
+            }
+            
+            shuffleArray(options);
+            activeOptions = options; // Guardem l'array barrejat per referència
+
+            // 3. Genera el HTML
+            const quizArea = document.getElementById('quiz-area');
+            
+            let col1Html = '';
+            let col2Html = '';
+            
+            for (let i = 0; i < activeOptions.length; i++) {
+                const opt = activeOptions[i];
+                
+                const optionHtml = `
+                    <div id="container-${opt.id}" class="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                        <span class="text-sm font-medium text-gray-700 break-words pr-2 flex-1">${opt.option}</span>
+                        <div id="option-${opt.id}" class="flex-shrink-0">
+                            <!-- Botó reemplaçable -->
+                            <div class="option-button" 
+                                 onclick="revealAnswer(this, '${opt.id}', '${opt.correctAnswer.replace(/'/g, "\\'")}')">?</div>
+                        </div>
+                    </div>
+                `;
+
+                if (i < 5) {
+                    col1Html += optionHtml;
+                } else if (i < 10) { 
+                    col2Html += optionHtml;
+                }
+            }
+
+            const htmlContent = `
+                <!-- PREGUNTA EN GRAN -->
+                <div class="p-6 mb-4 bg-indigo-100 rounded-xl shadow-lg border-2 border-indigo-400">
+                    <p class="text-xl md:text-2xl font-extrabold text-indigo-800 text-center">
+                        ${question}
+                    </p>
+                </div>
+                
+                <!-- TORN DEL JUGADOR (Amb ID per a l'actualització) -->
+                <h3 id="current-player-turn" class="text-xl font-bold text-gray-800 mb-6 text-center text-indigo-700 p-2 bg-indigo-50 rounded-lg shadow-md">
+                    Et toca, ${players[currentPlayerIndex].name} (acumules ${players[currentPlayerIndex].currentRoundScore} p.)
+                </h3>
+
+                <!-- OPCIONS EN DUES COLUMNES (GRID) -->
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">
+                    Opcions de Resposta
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col space-y-4">
+                        ${col1Html}
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        ${col2Html}
+                    </div>
+                </div>
+            `;
+
+            quizArea.innerHTML = htmlContent;
+            document.getElementById('pass-button-container').style.display = 'block';
+            updateScoreboard(); 
+        }
+
+        // Funció que finalitza la ronda i inicia la següent
+        function endRound() {
+            let maxScoreAchieved = 0;
+            
+            // 1. Sumar els punts de ronda de l'últim jugador i comprovar la condició de victòria
+            players.forEach(p => {
+                p.score += p.currentRoundScore;
+                p.currentRoundScore = 0;
+                if (p.score >= WINNING_SCORE) {
+                    maxScoreAchieved = Math.max(maxScoreAchieved, p.score);
+                }
+            });
+            updateScoreboard();
+
+            // 2. Comprovació de final de partida
+            if (maxScoreAchieved >= WINNING_SCORE) {
+                endGame();
+                return; 
+            }
+
+            // 3. Preparar la UI per a la nova ronda
+            const quizArea = document.getElementById('quiz-area');
+            quizArea.innerHTML = `
+                <div class="text-center p-8 bg-green-50 rounded-xl border-2 border-green-300 shadow-md">
+                    <p class="text-xl font-bold text-green-700">Ronda finalitzada! S'està triant una nova pregunta...</p>
+                    <p class="text-lg font-semibold text-gray-600 mt-2">Puntuacions actualitzades.</p>
+                </div>
+            `;
+            document.getElementById('pass-button-container').style.display = 'none';
+            
+            // 4. Determinar el jugador que començarà la nova ronda i iniciar-la
+            // currentPlayerIndex apunta al jugador que va acabar la ronda.
+            const nextStarterIndex = (currentPlayerIndex + 1) % players.length;
+
+            setTimeout(() => {
+                currentPlayerIndex = nextStarterIndex; // El següent jugador comença.
+                startQuiz(csvData);
+            }, 1500);
+        }
+
+        // Funció que gestiona el final de la partida
+        function endGame() {
+            const quizArea = document.getElementById('quiz-area');
+            document.getElementById('pass-button-container').style.display = 'none';
+
+            let winner = players[0];
+            let maxScore = -1;
+            
+            // Trobar el guanyador (el que tingui la puntuació més alta)
+            players.forEach(p => {
+                if (p.score > maxScore) {
+                    maxScore = p.score;
+                    winner = p;
+                }
+            });
+            
+            // Generar el missatge final amb tots els jugadors i el guanyador
+            let finalScores = players.map(p => `${p.name}: ${p.score} punts`).join(', ');
+
+            quizArea.innerHTML = `
+                <div class="text-center p-8 bg-pink-100 rounded-xl border-2 border-pink-400 shadow-xl">
+                    <h2 class="text-3xl font-extrabold text-pink-700 mb-4">🎉 FI DE LA PARTIDA! 🎉</h2>
+                    <p class="text-xl font-bold text-pink-800 mb-6">
+                        El GUANYADOR és ${winner.name} amb ${winner.score} punts!
+                    </p>
+                    <div class="p-4 bg-white rounded-lg border border-pink-200">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Puntuacions Finals:</h3>
+                        <p class="text-gray-600 text-sm md:text-base">${finalScores}</p>
+                    </div>
+                    <button onclick="window.location.reload()" 
+                            class="mt-6 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">
+                        Començar Nova Partida
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- Gestió del Modal i Puntuació ---
+
+        function revealAnswer(buttonElement, optionId, correctAnswer) {
+            // Només es pot respondre si el jugador actual NO ha passat
+            if (players[currentPlayerIndex].passed) {
+                // Si per algun error de UI es clica un botó quan el jugador està eliminat, s'ignora
+                return; 
+            }
+
+            // Marca l'opció com a revelada
+            const optionObj = activeOptions.find(opt => opt.id === optionId);
+            if (optionObj) {
+                if (optionObj.isRevealed) return; // Ja s'ha revelat, no fer res
+                optionObj.isRevealed = true;
+            }
+
+            // 1. Guardar l'ID de l'opció clicada
+            activeQuestionId = optionId;
+            
+            // 2. Mostrar la resposta correcta al modal
+            const answerText = document.getElementById('correct-answer-text');
+            answerText.textContent = `La resposta correcta era: "${correctAnswer}"`;
+            
+            // 3. Modificar el DOM per mostrar la resposta inline (substitueix el botó)
+            const parentDiv = document.getElementById(`option-${optionId}`);
+            
+            // Eliminem l'element actual (botó)
+            buttonElement.remove(); 
+            
+            // Afegim l'element de resposta INLINE al seu lloc
+            parentDiv.innerHTML = `
+                <span id="response-${optionId}" 
+                      class="text-sm font-bold text-gray-800 p-1 rounded bg-yellow-200 px-3 transition duration-300">
+                    ...
+                </span>
+            `;
+            
+            // Afegir la classe 'revealed' al contenidor per deshabilitar clics posteriors a la mateixa opció
+            document.getElementById(`container-${optionId}`).classList.add('revealed');
+
+
+            // 4. Obrir el modal de confirmació
+            const modal = document.getElementById('quiz-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(wasCorrect) {
+            const modal = document.getElementById('quiz-modal');
+            modal.style.display = 'none';
+
+            if (!activeQuestionId) return; 
+
+            const currentPlayer = players[currentPlayerIndex];
+            const responseElement = document.getElementById(`response-${activeQuestionId}`);
+            
+            // 1. Mostrar la resposta final amb color
+            const correctAnswer = document.getElementById('correct-answer-text').textContent.replace('La resposta correcta era: "', '').replace('"', '');
+            responseElement.textContent = correctAnswer; 
+
+            // 2. Aplicar estils basats en la confirmació
+            responseElement.classList.remove('bg-yellow-200');
+            
+            if (wasCorrect) {
+                // S'encerta: Suma 1 punt de ronda.
+                currentPlayer.currentRoundScore += 1;
+                responseElement.classList.add('bg-green-200', 'text-green-800');
+            } else {
+                // Es falla: Pèrdua de la puntuació acumulada de la ronda I ELIMINACIÓ.
+                currentPlayer.currentRoundScore = 0;
+                currentPlayer.passed = true; // <--- JUGADOR ELIMINAT DE LA RONDA
+                responseElement.classList.add('bg-red-200', 'text-red-800');
+            }
+            
+            // 3. Incrementar el comptador de respostes revelades
+            revealedAnswersCount++; 
+            activeQuestionId = null; 
+
+            // 4. Actualització general de la UI
+            updateScoreboard();
+            updateTurnIndicator();
+            updatePassButton();
+
+            // 5. Comprova el final de la ronda o canvia el torn 
+            const allOptionsRevealed = revealedAnswersCount >= activeOptions.length;
+            
+            if (allOptionsRevealed) {
+                // Si totes les opcions s'han revelat, la ronda s'acaba. 
+                // currentPlayerIndex apunta al jugador que va fer l'última acció.
+                endRound(); 
+            } else {
+                // TORN SEMPRE CANVIA si la ronda no ha acabat
+                nextPlayer(); 
+            }
+        }
+    </script>
+</body>
+</html>
