@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruccions - SMART 10 Digital</title>
+    <!-- Inclou Tailwind CSS per a l'estil -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estil per als títols de les seccions (GROC, MÉS GRANS, NEGRETA - FORÇAT) */
+        .section-title {
+            color: #fcd34d; /* Groc clar (yellow-300 de Tailwind) */
+            font-size: 2.25rem; /* Mida text-4xl de Tailwind */
+            font-weight: 800; /* Pes extrabold de Tailwind */
+            
+            /* Mantinc les classes Tailwind per al layout */
+            @apply mb-4 pb-2 border-b-2 border-orange-800;
+        }
+        /* Estil per als punts de les instruccions (FORÇAT A BLANC I NEGRETA) */
+        .instruction-item {
+            color: white; /* Correcció explícita */
+            @apply font-bold text-base mb-3 leading-relaxed;
+        }
+        /* Estil per al color de fons del codi/format (FORÇAT A BLANC I NEGRETA) */
+        .code-block {
+            color: white; /* Correcció explícita */
+            /* Fons taronja fosc per al bloc de codi */
+            @apply bg-orange-800 p-4 rounded-lg text-sm overflow-x-auto font-bold; 
+        }
+        /* Estil per a les paraules clau dins de seccions de text (Verd Clar) */
+        .keyword {
+            @apply font-bold text-green-300;
+        }
+        /* El subtítol 'Puntuació i Risc:' de la secció 1 ha de ser GROC i NEGRETA. */
+        .section-subtitle {
+            color: #fcd34d; /* Groc clar (yellow-300 de Tailwind) */
+            @apply text-lg font-extrabold mb-3; /* Forcem negreta extrema */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex flex-col items-center min-h-screen bg-amber-100">
+
+    <!-- CONTENIDOR PRINCIPAL: Taronja més clar (bg-orange-600) -->
+    <div class="w-full max-w-4xl bg-orange-600 shadow-xl rounded-xl p-6 md:p-10 border border-orange-500">
+
+        <!-- Header/Title container -->
+        <div class="flex justify-between items-center mb-8 border-b-2 border-gray-900 pb-2">
+            <!-- Títol (Blanc) -->
+            <h1 class="text-3xl font-bold text-white">
+                Instruccions del Joc
+            </h1>
+            <!-- Botó de Tornar a la Partida (Rodó Blau amb fletxa) -->
+            <a href="csv_uploader.html" 
+               class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full text-xl font-bold shadow-lg hover:bg-blue-700 transition duration-150 transform hover:scale-110" 
+               aria-label="Tornar a la Partida">
+                &larr;
+            </a>
+        </div>
+
+        <!-- SECCIÓ 1: COM JUGAR -->
+        <div class="mb-10 p-6 bg-orange-700 rounded-lg border-l-4 border-orange-800">
+            <!-- Títol de secció ara GROC, MÉS GRAN I NEGRETA (via .section-title) -->
+            <h2 class="section-title">Com Jugar</h2>
+
+            <!-- Objectiu -->
+            <div class="instruction-item">
+                <span class="keyword">Objectiu del Joc:</span> Ser el primer jugador a aconseguir una puntuació de <span class="keyword">30 punts</span> o més.
+            </div>
+
+            <!-- Ordre de Torns -->
+            <div class="instruction-item">
+                <span class="keyword">Inici de Ronda:</span> Es mostra una pregunta amb 10 opcions de resposta. El jugador de torn (marcat en verd al marcador) tria una opció.
+            </div>
+
+            <!-- Desenvolupament del Torn (TEXT MODIFICAT) -->
+            <div class="instruction-item">
+                <span class="keyword">Torn:</span> El jugador actiu tria una de les 10 opcions, formula la seva resposta en veu alta i clica el botó '?' per revelar la resposta correcta.
+            </div>
+
+            <!-- Sistema de Puntuació i Accions -->
+            <div class="p-4 bg-orange-800 rounded-lg mt-4">
+                <!-- Subtítol ara GROC i NEGRETA (via .section-subtitle) -->
+                <h3 class="section-subtitle">Puntuació i Risc:</h3>
+                
+                <ul class="list-disc ml-5 space-y-2 text-white font-bold text-sm">
+                    <li><span class="keyword">Encertar:</span> Si la teva resposta és correcta, guanyes <span class="keyword">1 punt de ronda</span> (es mostra entre parèntesis al marcador). El torn passa al següent jugador actiu.</li>
+                    <li><span class="keyword">Fallar:</span> Si la teva resposta és incorrecta, <span class="keyword">perds els punts de ronda acumulats</span> (si en tenies) i et marques com a "Fora de la Ronda" (el teu color canvia a vermell). La teva puntuació total prèvia es manté.</li>
+                    <li><span class="keyword">Passar:</span> Si no vols arriscar, pots clicar el botó "Passo" (que mostra els punts de ronda que has acumulat). Els punts de ronda se sumen a la teva puntuació total i et marques com a "Fora de la Ronda".</li>
+                </ul>
+            </div>
+
+            <!-- Final de Ronda -->
+            <div class="instruction-item mt-4">
+                <span class="keyword">Final de Ronda:</span> La ronda acaba immediatament quan:
+                <ul class="list-disc ml-5 mt-1 text-white font-bold">
+                    <li>S'han revelat les 10 opcions de resposta.</li>
+                    <li>Tots els jugadors actius han passat o han fallat.</li>
+                </ul>
+            </div>
+            
+            <!-- Final de Partida -->
+            <div class="instruction-item">
+                <span class="keyword">Final de Partida:</span> El joc finalitza al final de la ronda en què un o més jugadors assoleixen o superen els <span class="keyword">30 punts</span>. Guanya el jugador amb la puntuació total més alta.
+            </div>
+
+        </div>
+
+        <!-- SECCIÓ 2: COM CREAR PREGUNTES NOVES -->
+        <div class="p-6 bg-orange-700 rounded-lg border-l-4 border-orange-800">
+            <!-- Títol de secció ara GROC, MÉS GRAN I NEGRETA (via .section-title) -->
+            <h2 class="section-title">Com crear preguntes noves (CSV)</h2>
+
+            <div class="instruction-item mb-5">
+                Podeu crear els vostres propis fitxers de preguntes amb el format <span class="keyword">CSV (Comma-Separated Values)</span> per carregar-los al joc. És important respectar el format de <span class="keyword">delimitador de punt i coma (;)</span> i la numeració de les columnes:
+            </div>
+            
+            <!-- Subtítol ara GROC i NEGRETA (via .section-subtitle) -->
+            <h3 class="section-subtitle">Estructura del Fitxer CSV:</h3>
+            
+            <div class="code-block">
+                <p><span class="keyword">Delimitador:</span> Punt i coma (;) </p>
+                <p><span class="keyword">Codificació:</span> UTF-8 (per a accents i caràcters especials)</p>
+            </div>
+            
+            <!-- Subtítol ara GROC i NEGRETA (via .section-subtitle) -->
+            <h3 class="section-subtitle mt-4">Ordre de Columnes per a cada Fila de Pregunta:</h3>
+
+            <div class="code-block">
+                <!-- Aquest text ja era blanc i negreta -->
+                <span class="text-white font-bold"># Fila de Capçalera (Es pot ignorar, però és recomanable posar-la)</span><br>
+                <span class="text-white font-bold">ID;Pregunta;Categoria;Opció 1;Resposta 1;Opció 2;Resposta 2;...;Opció 10;Resposta 10</span>
+                <br><br>
+                
+                <!-- Ajustat a text-white font-bold -->
+                <span class="text-white font-bold">Col 1: </span><span class="keyword">ID_Pregunta</span> (Text lliure, per referència interna)<br>
+                <span class="text-white font-bold">Col 2: </span><span class="keyword">TEXT_DE_LA_PREGUNTA</span> (Apareix a l'esfera central)<br>
+                <span class="text-white font-bold">Col 3: </span><span class="keyword">CATEGORIA</span> (Apareix a sobre de l'esfera)<br>
+                <span class="text-white font-bold">Col 4: </span><span class="keyword">Opció_1</span> (Text que veu el jugador)<br>
+                <span class="text-white font-bold">Col 5: </span><span class="keyword">Resposta_Correcta_1</span> (El que es revela al clicar el '?')<br>
+                <span class="text-white font-bold">Col 6: </span><span class="keyword">Opció_2</span><br>
+                <span class="text-white font-bold">Col 7: </span><span class="keyword">Resposta_Correcta_2</span><br>
+                <span class="text-white font-bold">...</span><br>
+                <span class="text-white font-bold">Col 22: </span><span class="keyword">Opció_10</span><br>
+                <span class="text-white font-bold">Col 23: </span><span class="keyword">Resposta_Correcta_10</span><br>
+            </div>
+            
+            <!-- Subtítol ara GROC i NEGRETA (via .section-subtitle) -->
+            <h3 class="section-subtitle mt-5">Exemple de Fila de Dades:</h3>
+            <div class="code-block">
+                Q1;Digues un esport olímpic.;Esports;Natació;Michael Phelps;Bàsquet;USA Dream Team;Futbol;Leo Messi;...;Vela;Embarcació<br>
+                <!-- Aquest text ja era blanc i negreta -->
+                <span class="text-white font-bold"># 23 Columnes en total per cada pregunta.</span>
+            </div>
+
+            <div class="instruction-item mt-4">
+                <span class="keyword">Important:</span> Perquè el joc funcioni, cada fila ha de tenir <span class="keyword">exactament 23 columnes</span> (amb les 10 parelles Opció/Resposta) i <span class="keyword">ha d'estar delimitada per punt i coma (;)</span>.
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Peu de pàgina (REVERTIT A GRIS) -->
+    <footer class="mt-8 text-center text-sm text-gray-700">
+        <p>Un desenvolupament de Xavier Ribes amb Gemini pel GameLab</p>
+        <p class="mt-1">Departament de Comunicació Audiovisual i Publicitat de la UAB</p>
+    </footer>
+</body>
+</html>
