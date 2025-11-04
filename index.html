@@ -97,15 +97,26 @@
         }
     </style>
 </head>
-<body class="p-4 sm:p-8 flex items-start justify-center min-h-screen bg-amber-100">
+<!-- CANVI CLAU AQUÍ: S'ha canviat "items-start justify-center" a "flex-col items-center" per assegurar l'apilament vertical i el centrat. -->
+<body class="p-4 sm:p-8 flex flex-col items-center min-h-screen bg-amber-100">
 
     <!-- CONTENIDOR PRINCIPAL: Taronja més clar (bg-orange-600) -->
     <div class="w-full max-w-4xl bg-orange-600 shadow-xl rounded-xl p-6 md:p-10 border border-orange-500">
 
-        <!-- Títol (Blanc) -->
-        <h1 class="text-3xl font-bold text-white mb-6 border-b-2 border-gray-900 pb-2">
-            SMART 10 Digital
-        </h1>
+        <!-- Header/Title container AMB BOTÓ D'INSTRUCCIONS -->
+        <div class="flex justify-between items-center mb-6 border-b-2 border-gray-900 pb-2">
+            <!-- Títol (Blanc) -->
+            <h1 class="text-3xl font-bold text-white">
+                SMART 10 Digital
+            </h1>
+            <!-- Botó d'Instruccions (Rodó Blau amb 'i') -->
+            <a href="instruccions.html" target="_blank" 
+               class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full text-xl font-bold shadow-lg hover:bg-blue-700 transition duration-150 transform hover:scale-110" 
+               aria-label="Instruccions del Joc">
+                i
+            </a>
+        </div>
+
 
         <!-- Puntuació dels Jugadors (Centrat) -->
         <div id="scoreboard" class="mb-6 p-3 bg-orange-700 rounded-lg shadow-inner">
@@ -174,6 +185,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Peu de pàgina AFEGIT (Actualitzat segons petició de l'usuari) -->
+    <footer class="mt-8 text-center text-sm text-gray-700">
+        <p>Un desenvolupament de Xavier Ribes amb Gemini pel GameLab</p>
+        <p class="mt-1">Departament de Comunicació Audiovisual i Publicitat de la UAB</p>
+    </footer>
+
 
     <!-- QUADRE DE DIÀLEG PERSONALITZAT (MODAL) -->
     <div id="quiz-modal" class="modal-backdrop">
@@ -266,6 +284,9 @@
             const container = document.getElementById('remote-files-list');
             container.innerHTML = remoteFilesList.map((file) => {
                 const isChecked = file.checked;
+                // MODIFICACIÓ CLAU: Elimina l'extensió ".csv"
+                const displayName = file.name.replace(/\.csv$/i, ''); 
+
                 return `
                     <div class="flex items-center text-white">
                         <input type="checkbox" id="file-${file.name}" name="csvSourceRemote" value="${file.name}" 
@@ -273,7 +294,7 @@
                                onchange="handleRemoteFileCheck()"
                                class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded cursor-pointer">
                         <label for="file-${file.name}" class="ml-3 block text-sm font-medium cursor-pointer">
-                            ${file.name}
+                            ${displayName}
                         </label>
                     </div>
                 `;
