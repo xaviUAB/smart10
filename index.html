@@ -3,867 +3,783 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART 10 Digital</title>
+    <title>SMART 10 Digital (Layout Cercle V7)</title>
     <!-- Inclou Tailwind CSS per a l'estil -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Configuració de font global */
         body {
             font-family: 'Inter', sans-serif;
-            /* Fons general que contrasta amb la junta taronja */
         }
-        
-        /* Estil per al botó rodó de disc (imita la peça del joc) */
-        .option-button {
-            width: 32px; /* Més gran */
-            height: 32px; /* Més gran */
-            /* Efecte glossy fosc/negre */
-            background: radial-gradient(circle at 35% 35%, #555 0%, #111 70%, #000 100%); 
-            border: 1px solid #333;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            /* Sombra per profunditat */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.2);
-            transition: background 0.15s, transform 0.15s;
-            flex-shrink: 0;
-            user-select: none; 
+
+        /* Estil per als discs de resposta (imitació 3D) */
+        .answer-disc {
+            background-color: #1a202c; /* gray-900 */
+            border-top: 2px solid #4a5568; /* gray-600 */
+            border-bottom: 2px solid #000;
+            transition: all 0.15s ease-out;
+            transform: scale(1);
+            /* Estil del text '?' (Blanc) */
+            @apply text-white text-2xl font-bold;
+            color: white; /* CANVIAT: Força el color blanc per al '?' */
         }
-        .option-button:hover {
-            background: radial-gradient(circle at 35% 35%, #666 0%, #222 70%, #111 100%);
+        .answer-disc:hover {
+            background-color: #2d3748; /* gray-800 */
             transform: scale(1.05);
         }
-
-        /* Estil per a les opcions ja revelades */
-        .revealed {
-            cursor: default;
-        }
-        .revealed .option-button {
-            pointer-events: none; /* Deshabilita el clic un cop revelat */
-            opacity: 0.6;
-        }
-
-        /* Estil per a l'Esfera de la Pregunta (imita el centre de la carta) */
-        .question-sphere {
-            border: 4px solid #F97316; /* Vora Taronja Fort */
-            border-radius: 9999px; /* Totalment circular */
-            background-color: white; 
-            color: #1f2937; /* Text fosc */
-            min-height: 250px;
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-
-        /* Estil per al Modal (Quadre de Diàleg Personalitzat) */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Ocult per defecte */
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
         
-        /* Ombra de text per a la categoria (millor contrast) */
-        .text-shadow-sm {
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+        /* Animació de parpelleig per al temporitzador */
+        @keyframes blink-warning {
+            50% { 
+                color: #ef4444; /* red-500 */
+                transform: scale(1.1);
+            }
+        }
+        .timer-warning {
+            animation: blink-warning 1s infinite;
         }
     </style>
 </head>
-<!-- CANVI CLAU AQUÍ: S'ha canviat "items-start justify-center" a "flex-col items-center" per assegurar l'apilament vertical i el centrat. -->
+
+<!-- Cos principal: Fons Ambre clar, centrat i apilat verticalment -->
 <body class="p-4 sm:p-8 flex flex-col items-center min-h-screen bg-amber-100">
 
-    <!-- CONTENIDOR PRINCIPAL: Taronja més clar (bg-orange-600) -->
-    <div class="w-full max-w-4xl bg-orange-600 shadow-xl rounded-xl p-6 md:p-10 border border-orange-500">
+    <!-- CONTENIDOR PRINCIPAL: Taronja (bg-orange-600) -->
+    <div class="w-full max-w-5xl bg-orange-600 shadow-2xl rounded-xl p-6 md:p-10 border-4 border-orange-500">
 
-        <!-- Header/Title container AMB BOTÓ D'INSTRUCCIONS -->
-        <div class="flex justify-between items-center mb-6 border-b-2 border-gray-900 pb-2">
-            <!-- Títol (Blanc) -->
-            <h1 class="text-3xl font-bold text-white">
+        <!-- Header/Title container -->
+        <div class="flex justify-between items-center mb-6 border-b-4 border-gray-900 pb-4">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white">
                 SMART 10 Digital
             </h1>
-            <!-- Botó d'Instruccions (Rodó Blau amb 'i') -->
-            <a href="instruccions.html" target="_blank" 
-               class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full text-xl font-bold shadow-lg hover:bg-blue-700 transition duration-150 transform hover:scale-110" 
-               aria-label="Instruccions del Joc">
-                i
-            </a>
-        </div>
-
-
-        <!-- Puntuació dels Jugadors (Centrat) -->
-        <div id="scoreboard" class="mb-6 p-3 bg-orange-700 rounded-lg shadow-inner">
-            <div id="player-scores" class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium justify-center">
-                <!-- Puntuacions generades per JS -->
+            <div class="flex items-center space-x-3">
+                <button id="toggle-timer-button" class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white text-2xl rounded-full shadow-lg hover:bg-blue-700 transition-all duration-150 transform hover:scale-110" 
+                        aria-label="Activar/Desactivar Temporitzador">
+                    ⏰
+                </button>
+                <a href="instruccions.html" 
+                   class="w-10 h-10 flex items-center justify-center bg-blue-600 text-white text-2xl font-bold rounded-full shadow-lg hover:bg-blue-700 transition duration-150 transform hover:scale-110" 
+                   aria-label="Instruccions">
+                    i
+                </a>
             </div>
         </div>
-        
-        <!-- Àrea de Configuració i Càrrega (UNIFICADA) -->
-        <div id="game-setup" class="p-6 bg-orange-700 rounded-lg border-l-4 border-orange-800 mb-8">
-            <h2 class="text-xl font-bold text-white mb-4">1. Configuració de Jugadors</h2>
+
+        <!-- ====== 1. ÀREA DE CONFIGURACIÓ ====== -->
+        <div id="game-setup">
+            <div class="bg-orange-700 p-6 rounded-lg shadow-inner border-b-4 border-orange-900">
+                <h2 class="text-2xl font-bold text-amber-200 mb-4 text-center border-b border-orange-500 pb-2">Configuració de la Partida</h2>
+                <div class="mb-4">
+                    <label for="player-count" class="block text-lg font-bold text-white mb-2">Quants jugadors? (1-4)</label>
+                    <select id="player-count" class="w-full p-3 rounded-lg bg-white text-gray-900 font-bold focus:outline-none focus:ring-4 focus:ring-amber-300">
+                        <option value="1" selected>1 Jugador</option>
+                        <option value="2">2 Jugadors</option>
+                        <option value="3">3 Jugadors</option>
+                        <option value="4">4 Jugadors</option>
+                    </select>
+                </div>
+                <div id="player-names-container" class="space-y-3 mb-6">
+                    <!-- Els inputs dels noms van aquí -->
+                </div>
+                <div class="flex items-center justify-center space-x-2 mt-4">
+                    <input type="checkbox" id="enable-timer-checkbox" class="h-5 w-5 rounded text-blue-600 focus:ring-blue-500">
+                    <label for="enable-timer-checkbox" class="text-white font-bold">Activar Temporitzador (45s)</label>
+                </div>
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-amber-200 mb-3">Tria un o més conjunts de preguntes:</h3>
+                    <div id="remote-files-container" class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-40 overflow-y-auto bg-orange-800 p-3 rounded-lg">
+                        <p class="text-white italic col-span-full">Carregant llista de fitxers...</p>
+                    </div>
+                </div>
+                <form id="setup-form" class="mt-8 text-center">
+                    <button type="submit" class="w-full md:w-auto bg-amber-200 text-gray-900 text-xl font-bold py-4 px-10 rounded-lg shadow-lg hover:bg-white transform hover:scale-105 transition-transform duration-150">
+                        Començar Partida
+                    </button>
+                </form>
+            </div>
+            <div id="local-upload-area" class="mt-6 text-center bg-orange-700 p-4 rounded-lg shadow-inner">
+                <label for="csv-file" class="block text-lg font-bold text-white mb-2">... o puja el teu propi fitxer CSV:</label>
+                <input type="file" id="csv-file" accept=".csv" class="w-full text-sm text-white font-bold
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-amber-200 file:text-gray-900
+                    hover:file:bg-white">
+            </div>
+        </div>
+
+        <!-- ====== 2. ÀREA DE JOC ====== -->
+        <div id="game-area" class="hidden">
             
-            <!-- Player Config -->
-            <div id="player-config-section">
-                <label for="playerCount" class="block text-sm font-medium text-white mb-2">Nombre de Jugadors (1 a 4):</label>
-                <select id="playerCount" onchange="generateNameInputs()" class="mb-4 p-2 border border-orange-900 rounded-lg w-full md:w-auto text-gray-900">
-                    <option value="1">1 Jugador</option>
-                    <option value="2" selected>2 Jugadors</option>
-                    <option value="3">3 Jugadors</option>
-                    <option value="4">4 Jugadors</option>
-                </select>
+            <div id="scoreboard" class="flex flex-wrap justify-center gap-2 mb-6 p-4 bg-red-900 bg-opacity-75 rounded-lg shadow-inner">
+                <!-- Marcadors -->
+            </div>
+            
+            <div class="bg-orange-700 p-4 md:p-6 rounded-lg shadow-inner border-b-4 border-orange-900">
                 
-                <div id="nameInputs" class="space-y-3 mb-6">
-                    <!-- Inputs de nom generats per JS -->
+                <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 my-6">
+                    
+                    <!-- Columna Esquerra (Opcions 1-5) -->
+                    <div id="options-col-1" class="space-y-4 w-full md:w-1/3 order-2 md:order-1">
+                        <!-- JS fills this -->
+                    </div>
+
+                    <div class="flex flex-col items-center order-1 md:order-2">
+                        <div id="category-display" class="text-center text-sm font-semibold text-white mb-2">
+                            <!-- Categoria de la pregunta -->
+                        </div>
+                        
+                        <!-- CANVIAT: Mida fixa (w-56 h-56 / w-64 h-64) per a un cercle perfecte -->
+                        <div class="relative w-56 h-56 md:w-64 md:h-64 bg-white rounded-full flex items-center justify-center p-8 shadow-xl border-4 border-orange-300">
+                            <p id="question-text" class="text-xl md:text-2xl font-bold text-gray-900 text-center leading-tight">
+                                <!-- Text de la pregunta -->
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Columna Dreta (Opcions 6-10) -->
+                    <div id="options-col-2" class="space-y-4 w-full md:w-1/3 order-3 md:order-3">
+                        <!-- JS fills this -->
+                    </div>
                 </div>
-            </div>
-
-            <h2 class="text-xl font-bold text-white mt-6 mb-4 border-t pt-4 border-orange-800">2. Selecció del Fitxer de Preguntes</h2>
-            
-            <!-- Remote Files Section (CHECKBOX SELECTION) -->
-            <div id="data-config-section" class="mb-6">
-                <!-- Color del text utilitzat per al botó: text-amber-200 -->
-                <h3 class="text-lg font-bold text-amber-200 mb-3">Tria un o més jocs predefinits:</h3>
-                <div id="remote-files-list" class="space-y-2 mb-6 p-3 bg-orange-800 rounded-lg min-h-[50px]">
-                    <p class="text-white italic text-sm">Carregant llista de fitxers...</p>
+                
+                <div class="turn-indicator-container flex flex-col md:flex-row justify-between items-center bg-red-900 bg-opacity-75 p-3 rounded-lg mt-6 shadow-inner">
+                    <div class="flex items-center">
+                        <span id="turn-indicator" class="text-xl md:text-2xl font-extrabold text-orange-500">
+                            Et toca, Jugador!
+                        </span>
+                        <div id="timer-display" class="hidden ml-4 text-2xl font-bold text-white">45s</div>
+                    </div>
+                    
+                    <button id="pass-turn-button" class="w-full md:w-auto mt-3 md:mt-0 bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-red-800 transform hover:scale-105 transition-transform duration-150">
+                        Em planto (0)
+                    </button>
                 </div>
-            </div>
-            
-            <!-- Botó Començar Partida (Estilitzat amb bg-amber-200 i text-gray-900) -->
-            <button onclick="startGameSetup()" id="start-setup-btn" class="px-6 py-3 bg-amber-200 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-amber-300 transition duration-150 w-full">
-                Començar Partida
-            </button>
-            <p id="error-message" class="text-sm text-red-300 mt-2 hidden">Si us plau, tria almenys un fitxer de preguntes.</p>
-
-        </div>
-
-        <!-- Àrea de Càrrega Local (Mogut fora del contenidor principal de configuració, sota el botó) -->
-        <!-- FIX: Afegim un ID per poder ocultar aquesta secció en començar la partida -->
-        <div id="local-upload-area" class="mt-8 p-6 bg-orange-700 rounded-lg border-l-4 border-orange-800">
-            <h3 class="text-lg font-bold text-amber-200 mb-3">O puja el teu fitxer local (CSV ;):</h3>
-            <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-white
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-gray-200 file:text-gray-900
-                hover:file:bg-gray-300 transition duration-150 cursor-pointer"
-                onchange="handleLocalFileSelect(event)">
-        </div>
-
-
-        <!-- Àrea de Joc (Inicialment, ocult) -->
-        <div id="game-area" style="display:none;" class="mt-8">
-            <!-- Àrea del Quiz / Pregunta -->
-            <div id="quiz-area" class="min-h-[100px]">
-                <p class="text-gray-900 italic" id="initial-message">Carregant dades...</p>
             </div>
         </div>
     </div>
 
-    <!-- Peu de pàgina AFEGIT (Actualitzat segons petició de l'usuari) -->
+    <!-- Peu de pàgina -->
     <footer class="mt-8 text-center text-sm text-gray-700">
         <p>Un desenvolupament de Xavier Ribes amb Gemini pel GameLab</p>
         <p class="mt-1">Departament de Comunicació Audiovisual i Publicitat de la UAB</p>
     </footer>
 
-
-    <!-- QUADRE DE DIÀLEG PERSONALITZAT (MODAL) -->
-    <div id="quiz-modal" class="modal-backdrop">
-        <div class="modal-content">
-            <!-- Títol "Revisió de la Resposta" eliminat. -->
-            
-            <!-- Resposta correcta mostrada al modal (Ara més gran i negreta extrema) -->
-            <p id="correct-answer-text" class="text-3xl font-extrabold text-gray-800 mb-6 text-center"></p>
-
-            <p class="font-semibold text-gray-800 mb-4 text-center">Has encertat?</p>
-
-            <div class="flex justify-around space-x-4">
-                <button onclick="closeModal(true)" class="flex-1 px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">
-                    Sí, he encertat!
+    <!-- ====== 3. MODAL DE RESPOSTA ====== -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 max-w-lg w-full text-center border-4 border-yellow-300">
+            <p id="correct-answer-text" class="text-3xl font-extrabold text-gray-900 mb-6">
+                <!-- Resposta correcta -->
+            </p>
+            <p class="text-xl font-semibold text-gray-800 mb-6">Has encertat?</p>
+            <div class="flex justify-around">
+                <button id="correct-button" class="bg-green-600 text-white text-lg font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-green-700 transform hover:scale-105 transition-transform duration-150">
+                    He encertat!
                 </button>
-                <button onclick="closeModal(false)" class="flex-1 px-4 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-700 transition duration-150 shadow-md">
-                    No, he fallat
+                <button id="wrong-button" class="bg-red-600 text-white text-lg font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transform hover:scale-105 transition-transform duration-150">
+                    He fallat
                 </button>
             </div>
         </div>
     </div>
+    
+    <!-- ====== 4. MODAL DE FINAL DE PARTIDA ====== -->
+    <div id="game-over-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-lg w-full text-center border-4 border-orange-500">
+            <h2 id="game-over-title" class="text-4xl font-extrabold text-orange-600 mb-6">Partida Finalitzada!</h2>
+            <p id="game-over-winner" class="text-2xl font-semibold text-gray-900 mb-8">
+                <!-- El guanyador és [Jugador]! -->
+            </p>
+            <button id="restart-game-button" class="bg-blue-600 text-white text-xl font-bold py-4 px-10 rounded-lg shadow-lg hover:bg-blue-700 transform hover:scale-105 transition-transform duration-150">
+                Tornar a Jugar
+            </button>
+        </div>
+    </div>
 
+    <!-- ====== 5. MODAL: SENSE TEMPS ====== -->
+    <div id="time-up-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 max-w-lg w-full text-center border-4 border-red-500">
+            <p id="time-up-message" class="text-2xl font-extrabold text-gray-900 mb-6">
+                <!-- T'has quedat sense temps, [Jugador]! -->
+            </p>
+            <button id="time-up-confirm-button" class="bg-red-600 text-white text-lg font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transform hover:scale-105 transition-transform duration-150">
+                Eliminat de la ronda
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ====== JAVASCRIPT ====== -->
     <script>
-        // --- VARIABLES GLOBALS ---
-        // URL de contingut RAW de GitHub (Més fiable per a fitxers amb '.' o '_')
+        // --- Constants Globals i IDs d'Elements ---
+        const PLAYER_COUNT_SELECT = document.getElementById('player-count');
+        const PLAYER_NAMES_CONTAINER = document.getElementById('player-names-container');
+        const SETUP_FORM = document.getElementById('setup-form');
+        const CSV_FILE_INPUT = document.getElementById('csv-file');
+        const GAME_SETUP_AREA = document.getElementById('game-setup');
+        const LOCAL_UPLOAD_AREA = document.getElementById('local-upload-area');
+        const GAME_AREA = document.getElementById('game-area');
+        const SCOREBOARD = document.getElementById('scoreboard');
+        const CATEGORY_DISPLAY = document.getElementById('category-display');
+        const QUESTION_TEXT = document.getElementById('question-text');
+        const TURN_INDICATOR = document.getElementById('turn-indicator');
+        const PASS_TURN_BUTTON = document.getElementById('pass-turn-button');
+        const OPTIONS_CONTAINER_1 = document.getElementById('options-col-1');
+        const OPTIONS_CONTAINER_2 = document.getElementById('options-col-2');
+        const QUIZ_MODAL = document.getElementById('quiz-modal');
+        const CORRECT_ANSWER_TEXT = document.getElementById('correct-answer-text');
+        const CORRECT_BUTTON = document.getElementById('correct-button');
+        const WRONG_BUTTON = document.getElementById('wrong-button');
+        const GAME_OVER_MODAL = document.getElementById('game-over-modal');
+        const RESTART_GAME_BUTTON = document.getElementById('restart-game-button');
+        const REMOTE_FILES_CONTAINER = document.getElementById('remote-files-container');
+        
+        const TIME_UP_MODAL = document.getElementById('time-up-modal');
+        const TIME_UP_MESSAGE = document.getElementById('time-up-message');
+        const TIME_UP_CONFIRM_BUTTON = document.getElementById('time-up-confirm-button');
+        
         const REMOTE_CONTENT_BASE_URL = 'https://raw.githubusercontent.com/xaviuab/smart10/main/dades/';
-        // URL de l'API de GitHub per descobrir els fitxers
         const GITHUB_API_URL = "https://api.github.com/repos/xaviuab/smart10/contents/dades";
-        
-        // Llista de fitxers remots (carregada dinàmicament)
-        let remoteFilesList = []; 
-        
+
+        const ID_INDEX = 0;
+        const QUESTION_INDEX = 1;
+        const CATEGORY_INDEX = 2; 
+        const OPTIONS_START_INDEX = 3; 
+        const TOTAL_OPTIONS = 10;
+        const WINNING_SCORE = 30;
+
+        const TIMER_DISPLAY = document.getElementById('timer-display');
+        const ENABLE_TIMER_CHECKBOX = document.getElementById('enable-timer-checkbox');
+        const TOGGLE_TIMER_BUTTON = document.getElementById('toggle-timer-button');
+        const TIMER_DURATION = 45; 
+        const TIMER_WARNING = 10; 
+
         let csvData = [];
-        let availableQuestionIndices = []; 
+        let availableQuestionIndices = [];
         let players = [];
         let currentPlayerIndex = 0;
-        let activeQuestionId = null; 
-        let revealedAnswersCount = 0; 
-        let activeOptions = []; 
-        let localFileContent = null; 
-
-        // --- CONFIGURACIÓ DE LES COLUMNES (0-based) ---
-        const CATEGORY_INDEX = 2; // Columna 2 per a la categoria (Actualitzat)
-        const QUESTION_INDEX = 1; 
-        const OPTION_INDICES = [3, 5, 7, 9, 11, 13, 15, 17, 19, 21]; 
-        const CSV_DELIMITER = ';'; 
-        const WINNING_SCORE = 30; // Puntuació mínima per acabar la partida
+        let revealedOptionsCount = 0;
         
-        // --- INICIALITZACIÓ ---
+        let isTimerEnabled = false;
+        let timerInterval = null;
+        let timeLeft = TIMER_DURATION;
 
-        window.onload = function() {
-            generateNameInputs(); 
-            fetchRemoteFiles(); 
+
+        // --- 1. LÒGICA DE CONFIGURACIÓ ---
+        
+        window.onload = () => {
+            updatePlayerNameInputs(PLAYER_COUNT_SELECT.value);
+            loadRemoteFilesList();
         };
-        
-        async function fetchRemoteFiles() {
-            const container = document.getElementById('remote-files-list');
-            container.innerHTML = '<p class="text-white italic text-sm">Carregant llista de fitxers...</p>';
 
+        async function loadRemoteFilesList() {
             try {
                 const response = await fetch(GITHUB_API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                if (!response.ok) throw new Error(`Error de xarxa: ${response.statusText}`);
+                const files = await response.json();
                 
-                // Filtra només els fitxers .csv i en guarda el nom.
-                remoteFilesList = data
-                    .filter(item => item.type === 'file' && item.name.endsWith('.csv'))
-                    .map(item => ({ name: item.name, checked: item.name === 'general.csv' })); // Marca 'general.csv' per defecte
-
-                if (remoteFilesList.length === 0) {
-                     container.innerHTML = '<p class="text-red-300 text-sm">No s\'ha trobat cap fitxer CSV remot.</p>';
-                } else {
-                     // Si 'general.csv' no existeix, assegura que el primer fitxer estigui marcat per defecte
-                     if (!remoteFilesList.some(f => f.checked)) {
-                         remoteFilesList[0].checked = true;
-                     }
-                     renderRemoteFilesList();
+                const csvFiles = files.filter(file => file.name.endsWith('.csv'));
+                if (csvFiles.length === 0) {
+                    REMOTE_FILES_CONTAINER.innerHTML = '<p class="text-white italic col-span-full">No s\'han trobat fitxers CSV.</p>';
+                    return;
                 }
+                renderRemoteFilesList(csvFiles);
+            } catch (error) {
+                console.error("Error carregant la llista de fitxers remots:", error);
+                REMOTE_FILES_CONTAINER.innerHTML = `<p class="text-red-300 italic col-span-full">Error al carregar fitxers: ${error.message}</p>`;
+            }
+        }
+
+        function renderRemoteFilesList(files) {
+            REMOTE_FILES_CONTAINER.innerHTML = ''; 
+            files.forEach((file, index) => {
+                const fileNameWithoutExtension = file.name.replace(/\.csv$/, '');
+                const div = document.createElement('div');
+                div.className = "flex items-center";
+                
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.id = `remote-file-${index}`;
+                input.value = file.name;
+                input.name = 'remote-files';
+                input.className = 'h-5 w-5 rounded text-blue-600 focus:ring-blue-500';
+                
+                const label = document.createElement('label');
+                label.htmlFor = `remote-file-${index}`;
+                label.textContent = fileNameWithoutExtension;
+                label.className = 'ml-2 text-white font-semibold cursor-pointer';
+                
+                div.appendChild(input);
+                div.appendChild(label);
+                REMOTE_FILES_CONTAINER.appendChild(div);
+            });
+        }
+
+        PLAYER_COUNT_SELECT.addEventListener('change', (e) => {
+            updatePlayerNameInputs(e.target.value);
+        });
+
+        function updatePlayerNameInputs(count) {
+            PLAYER_NAMES_CONTAINER.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `player-name-${i}`;
+                input.placeholder = `Nom del Jugador ${i}`;
+                input.className = 'w-full p-3 rounded-lg bg-gray-100 text-gray-900 font-bold focus:outline-none focus:ring-4 focus:ring-amber-300';
+                input.required = true;
+                PLAYER_NAMES_CONTAINER.appendChild(input);
+            }
+        }
+
+        SETUP_FORM.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await startGameSetup();
+        });
+        
+        CSV_FILE_INPUT.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await startGameSetup(file);
+            }
+        });
+
+        async function startGameSetup(localFile = null) {
+            players = [];
+            const playerCount = PLAYER_COUNT_SELECT.value;
+            for (let i = 1; i <= playerCount; i++) {
+                const name = document.getElementById(`player-name-${i}`).value || `Jugador ${i}`;
+                players.push({ name: name, score: 0, currentRoundScore: 0, passed: false });
+            }
+            
+            isTimerEnabled = ENABLE_TIMER_CHECKBOX.checked;
+            updateTimerToggleButtonState(); 
+
+            try {
+                if (localFile) {
+                    const text = await localFile.text();
+                    csvData = parseCSV(text);
+                } else {
+                    const selectedFiles = document.querySelectorAll('input[name="remote-files"]:checked');
+                    if (selectedFiles.length === 0) {
+                        alert("Si us plau, selecciona almenys un conjunt de preguntes.");
+                        return;
+                    }
+                    const fileNames = Array.from(selectedFiles).map(input => input.value);
+                    csvData = await loadMultipleRemoteCSVs(fileNames);
+                }
+
+                if (csvData.length === 0) {
+                    alert("No s'han pogut carregar les preguntes.");
+                    return;
+                }
+
+                initializeQuestionPool();
+                currentPlayerIndex = 0; 
+
+                GAME_SETUP_AREA.classList.add('hidden');
+                LOCAL_UPLOAD_AREA.classList.add('hidden');
+                GAME_AREA.classList.remove('hidden');
+
+                startQuiz();
 
             } catch (error) {
-                console.error("Error carregant la llista de fitxers remots des de GitHub API:", error);
-                const container = document.getElementById('remote-files-list');
-                container.innerHTML = '<p class="text-red-300 text-sm">Error en carregar la llista de fitxers. Si us plau, introdueix un fitxer local.</p>';
-            }
-        }
-
-        function renderRemoteFilesList() {
-            const container = document.getElementById('remote-files-list');
-            container.innerHTML = remoteFilesList.map((file) => {
-                const isChecked = file.checked;
-                // MODIFICACIÓ CLAU: Elimina l'extensió ".csv"
-                const displayName = file.name.replace(/\.csv$/i, ''); 
-
-                return `
-                    <div class="flex items-center text-white">
-                        <input type="checkbox" id="file-${file.name}" name="csvSourceRemote" value="${file.name}" 
-                               ${isChecked ? 'checked' : ''} 
-                               onchange="handleRemoteFileCheck()"
-                               class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded cursor-pointer">
-                        <label for="file-${file.name}" class="ml-3 block text-sm font-medium cursor-pointer">
-                            ${displayName}
-                        </label>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Assegura que si es tria un fitxer local, els remots es netegen
-        function handleRemoteFileCheck() {
-            document.getElementById('csvFile').value = '';
-            localFileContent = null;
-            document.getElementById('error-message').classList.add('hidden');
-        }
-
-        function handleLocalFileSelect(event) {
-            const file = event.target.files[0];
-            const errorMessage = document.getElementById('error-message');
-            
-            if (file) {
-                // Si es carrega un fitxer local, desmarquem els remots
-                document.querySelectorAll('input[name="csvSourceRemote"]').forEach(checkbox => checkbox.checked = false);
-                localFileContent = null;
-                errorMessage.classList.add('hidden');
-
-                // Inicia la lectura del fitxer local
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    localFileContent = e.target.result;
-                };
-                reader.readAsText(file);
-            } else {
-                localFileContent = null;
+                console.error("Error durant la configuració del joc:", error);
+                alert(`Error en carregar les dades: ${error.message}`);
             }
         }
         
-        // --- FASE 1: CONFIGURACIÓ DELS JUGADORS I INICI ---
+        async function loadMultipleRemoteCSVs(fileNames) {
+            let combinedData = [];
+            for (const fileName of fileNames) {
+                try {
+                    const response = await fetch(REMOTE_CONTENT_BASE_URL + fileName);
+                    if (!response.ok) throw new Error(`No s'ha pogut carregar ${fileName}`);
+                    const text = await response.text();
+                    const data = parseCSV(text);
+                    combinedData = combinedData.concat(data);
+                } catch (error) {
+                    console.warn(`No s'ha pogut carregar ${fileName}: ${error.message}`);
+                }
+            }
+            return combinedData;
+        }
 
-        function generateNameInputs() {
-            const count = parseInt(document.getElementById('playerCount').value);
-            const container = document.getElementById('nameInputs');
-            container.innerHTML = '';
+        function parseCSV(text) {
+            return text.split('\n')
+                       .filter(row => row.trim() !== '')
+                       .slice(1)
+                       .map(row => row.split(';'));
+        }
 
-            for (let i = 0; i < count; i++) {
-                container.innerHTML += `
-                    <div>
-                        <label for="player${i+1}Name" class="block text-sm font-medium text-white">Nom Jugador ${i+1}:</label>
-                        <input type="text" id="player${i+1}Name" value="Jugador ${i+1}" 
-                               class="p-2 border border-orange-900 rounded-lg w-full mt-1 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900">
-                    </div>
-                `;
+        function initializeQuestionPool() {
+            availableQuestionIndices = Array.from({ length: csvData.length }, (_, i) => i);
+            for (let i = availableQuestionIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availableQuestionIndices[i], availableQuestionIndices[j]] = [availableQuestionIndices[j], availableQuestionIndices[i]];
             }
         }
 
-        async function startGameSetup() {
-            const remoteFiles = Array.from(document.querySelectorAll('input[name="csvSourceRemote"]:checked')).map(cb => cb.value);
-            const errorMessage = document.getElementById('error-message');
-            
-            if (remoteFiles.length === 0 && !localFileContent) {
-                errorMessage.classList.remove('hidden');
+
+        // --- 2. LÒGICA PRINCIPAL DEL JOC ---
+
+        function startQuiz() {
+            revealedOptionsCount = 0;
+            players.forEach(player => {
+                player.currentRoundScore = 0;
+                player.passed = false;
+            });
+
+            if (availableQuestionIndices.length === 0) {
+                alert("S'han acabat totes les preguntes disponibles!");
+                endGame(true);
                 return;
             }
-            errorMessage.classList.add('hidden');
 
-            const count = parseInt(document.getElementById('playerCount').value);
-            players = [];
+            const questionIndex = availableQuestionIndices.pop();
+            const questionData = csvData[questionIndex];
 
-            for (let i = 0; i < count; i++) {
-                const nameInput = document.getElementById(`player${i+1}Name`);
-                const name = nameInput.value.trim() || `Jugador ${i+1}`;
-                
-                players.push({
-                    id: i,
-                    name: name,
-                    score: 0, 
-                    currentRoundScore: 0, 
-                    passed: false 
+            OPTIONS_CONTAINER_1.innerHTML = '';
+            OPTIONS_CONTAINER_2.innerHTML = '';
+
+            if (!questionData || questionData.length < (OPTIONS_START_INDEX + TOTAL_OPTIONS * 2 - 1)) {
+                console.error("Dades de pregunta invàlides:", questionData);
+                startQuiz();
+                return;
+            }
+
+            QUESTION_TEXT.textContent = questionData[QUESTION_INDEX];
+            CATEGORY_DISPLAY.textContent = `Categoria: ${questionData[CATEGORY_INDEX]}`;
+
+            let options = [];
+            for (let i = 0; i < TOTAL_OPTIONS; i++) {
+                const optionIndex = OPTIONS_START_INDEX + i * 2;
+                const answerIndex = optionIndex + 1;
+                options.push({
+                    optionText: questionData[optionIndex],
+                    answerText: questionData[answerIndex],
+                    originalIndex: i
                 });
             }
+            shuffleArray(options); 
 
-            // FIX: Oculta només les seccions de configuració, no el contenidor principal.
-            document.getElementById('game-setup').style.display = 'none'; 
-            
-            const localUploadDiv = document.getElementById('local-upload-area');
-            if (localUploadDiv) { 
-                localUploadDiv.style.display = 'none'; 
-            }
-            
-            document.getElementById('game-area').style.display = 'block';
+            options.forEach((opt, index) => {
+                if (index < 5) {
+                    OPTIONS_CONTAINER_1.appendChild(createOptionElement(opt, index, 'left'));
+                } else {
+                    OPTIONS_CONTAINER_2.appendChild(createOptionElement(opt, index, 'right'));
+                }
+            });
+
+            currentPlayerIndex = (currentPlayerIndex) % players.length;
             
             updateScoreboard();
-            
-            if (localFileContent) {
-                // Carregar fitxer local
-                loadCSVData(localFileContent);
-            } else if (remoteFiles.length > 0) {
-                // Carregar fitxers remots
-                await loadMultipleRemoteCSVs(remoteFiles);
-            }
+            updateTurnIndicator();
+            startNewTurnTimer();
         }
-        
-        function updateScoreboard() {
-            const scoreContainer = document.getElementById('player-scores');
-            scoreContainer.innerHTML = '';
-
-            let maxScore = -1;
-            if (players.length > 0) {
-                maxScore = Math.max(...players.map(p => p.score));
-            }
-
-            players.forEach((player, index) => {
-                const isActive = index === currentPlayerIndex && !player.passed;
-                const isLeading = player.score > 0 && player.score === maxScore;
-                
-                const roundPointsDisplay = player.currentRoundScore > 0 ? ` (+${player.currentRoundScore})` : '';
-                
-                let classes = 'text-xs px-3 py-1'; // Default classes
-                
-                if (player.passed) {
-                    // Vermell per a jugadors que han passat (FORA)
-                    classes += ' bg-red-900 text-red-200 border border-red-700';
-                } else if (isActive) {
-                    // MODIFICACIÓ: Classes per fer el jugador actiu més gran i visible
-                    classes = 'bg-green-700 text-white shadow-2xl border-2 border-yellow-300 transform scale-105 ring-4 ring-yellow-400/50 text-base py-2 px-4';
-                } else {
-                    // Verd Clar per als jugadors inactius
-                    classes += ' bg-green-500 text-green-900 border border-green-400';
-                }
-
-                scoreContainer.innerHTML += `
-                    <span id="score-${player.id}" 
-                          class="rounded-full font-bold transition duration-300 flex items-center ${classes}">
-                        ${isLeading ? '👑 ' : ''}
-                        ${player.name}: ${player.score} punts${roundPointsDisplay}
-                    </span>
-                `;
-            });
-            
-            updatePassButton();
-        }
-
-        // --- GESTIÓ DE LA CÀRREGA DE DADES ---
-        
-        function displayMessage(text, isError = false) {
-            const quizArea = document.getElementById('quiz-area');
-            quizArea.innerHTML = `<p class="p-4 rounded-lg text-center ${isError ? 'bg-red-200 text-red-800 font-bold' : 'text-gray-900 italic'}" id="message">${text}</p>`;
-        }
-
-        async function loadMultipleRemoteCSVs(filenames) {
-            displayMessage(`Carregant dades (${filenames.length} fitxer/s)...`);
-            
-            const allData = [];
-            let successfulLoads = 0;
-
-            for (const filename of filenames) {
-                const url = REMOTE_CONTENT_BASE_URL + filename; 
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const csvText = await response.text();
-                    
-                    const rows = csvText.trim().split('\n').filter(row => row.trim() !== "");
-                    
-                    if (rows.length > 1) { // Més d'una fila (capçalera + dades)
-                        const data = rows.slice(1).map(row => {
-                            // Funció de separació per ; que gestiona cometes
-                            const values = row.match(/(".*?"|[^;]+)(?=;|\n|$)/g) || [];
-                            return values.map(v => v.trim().replace(/^"|"$/g, ''));
-                        });
-                        allData.push(...data);
-                        successfulLoads++;
-                    }
-                } catch (error) {
-                    console.error(`Error carregant fitxer remot ${filename}:`, error);
-                    displayMessage(`Advertència: No s'ha pogut carregar ${filename}. Continuant amb la resta.`, false);
-                }
-            }
-            
-            if (allData.length > 0) {
-                csvData = allData;
-                availableQuestionIndices = csvData.map((_, index) => index);
-                shuffleArray(availableQuestionIndices); 
-                startQuiz(csvData);
-            } else {
-                displayMessage(`No s'han trobat preguntes vàlides en els ${successfulLoads} fitxers carregats.`, true);
-            }
-        }
-
-        function loadCSVData(csvText) {
-            const rows = csvText.trim().split('\n').filter(row => row.trim() !== "");
-
-            if (rows.length < 2) {
-                displayMessage("El fitxer CSV ha de contenir almenys una fila de dades i la capçalera.", true);
-                return;
-            }
-
-            const data = rows.map(row => {
-                const values = row.match(/(".*?"|[^;]+)(?=;|\n|$)/g) || [];
-                return values.map(v => v.trim().replace(/^"|"$/g, ''));
-            });
-            
-            csvData = data.slice(1);
-            
-            if (csvData.length > 0) {
-                availableQuestionIndices = csvData.map((_, index) => index);
-                shuffleArray(availableQuestionIndices); 
-                startQuiz(csvData);
-            } else {
-                displayMessage("No s'han trobat preguntes vàlides al fitxer CSV local.", true);
-            }
-        }
-
-        // --- LÒGICA DE JOC (sense canvis significatius respecte al joc) ---
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]]; 
+                [array[i], array[j]] = [array[j], array[i]];
             }
+        }
+
+        function createOptionElement(opt, id, position = 'left') {
+            
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'flex items-center space-x-3';
+
+            const text = document.createElement('span');
+            text.className = 'flex-1 text-base font-bold text-yellow-300'; 
+            text.textContent = opt.optionText;
+
+            const button = document.createElement('button');
+            button.id = `option-button-${id}`;
+            button.className = 'answer-disc w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center'; 
+            button.textContent = '?';
+            button.onclick = () => revealAnswer(opt.answerText, button, position); 
+
+            if (position === 'right') {
+                text.classList.add('text-right');
+                optionDiv.appendChild(button);
+                optionDiv.appendChild(text);
+            } else {
+                text.classList.add('text-left');
+                optionDiv.appendChild(text);
+                optionDiv.appendChild(button);
+            }
+            
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = 'bg-red-900 bg-opacity-75 p-3 rounded-lg shadow-md'; 
+            wrapperDiv.id = `option-container-${id}`;
+            wrapperDiv.appendChild(optionDiv);
+
+            return wrapperDiv;
+        }
+
+
+        /**
+         * CANVIAT: Lògica de revelació (w-auto, treu break-words)
+         */
+        function revealAnswer(answerText, buttonElement, position) {
+            stopTimer();
+            buttonElement.disabled = true;
+            
+            buttonElement.textContent = answerText;
+            
+            buttonElement.classList.remove('answer-disc');
+            // CANVIAT: Treu w-10 (amplada fixa)
+            buttonElement.classList.remove('text-white', 'text-2xl', 'w-10'); 
+            
+            buttonElement.classList.add(
+                'bg-green-200',        // Verd claret
+                'text-green-800',       // Verd fosc
+                'text-sm',              // Mida de lletra per respostes
+                'font-bold',
+                'h-10',                 // Mateixa alçada
+                'min-w-[2.5rem]',       // Amplada mínima (com l'antic w-10)
+                'w-auto',               // CANVIAT: Amplada automàtica
+                'px-3',                 // Padding
+                'shadow-inner',
+                'rounded-lg'            // Arrodonit
+                // ELIMINAT: 'break-words' (permet expansió)
+            );
+            
+            CORRECT_ANSWER_TEXT.textContent = answerText;
+            QUIZ_MODAL.classList.remove('hidden');
+            QUIZ_MODAL.dataset.answerText = answerText; 
+            QUIZ_MODAL.dataset.buttonId = buttonElement.id;
         }
         
-        function updateTurnIndicator() {
-            const textContainer = document.getElementById('turn-indicator-text-container');
-            
-            if (textContainer) {
-                const currentPlayer = players[currentPlayerIndex];
-                
-                if (currentPlayer.passed) {
-                    textContainer.innerHTML = `
-                        <h3 class="text-lg font-bold text-red-300">
-                            ${currentPlayer.name} ha fallat i és fora de la ronda.
-                        </h3>
-                    `;
-                } else {
-                    // MODIFICACIÓ CLAU: Nova frase indicadora
-                    textContainer.innerHTML = `
-                        <h3 id="current-player-turn" class="text-xl font-extrabold text-white">
-                            Et toca, ${currentPlayer.name}!
-                        </h3>
-                    `;
-                }
-            }
-        }
-
-        function updatePassButton() {
-            const passBtn = document.getElementById('pass-btn');
-            
-            if (!passBtn) return;
-
+        PASS_TURN_BUTTON.addEventListener('click', () => {
+            stopTimer();
             const currentPlayer = players[currentPlayerIndex];
-            const roundScore = currentPlayer.currentRoundScore;
+            currentPlayer.score += currentPlayer.currentRoundScore;
+            currentPlayer.currentRoundScore = 0;
+            currentPlayer.passed = true;
+            nextPlayer();
+        });
 
-            if (currentPlayer.passed) {
-                passBtn.disabled = true;
-                passBtn.textContent = 'Fora de la Ronda';
+
+        // --- 3. LÒGICA DE MODALS I TORN ---
+
+        CORRECT_BUTTON.addEventListener('click', () => closeModal(true));
+        WRONG_BUTTON.addEventListener('click', () => closeModal(false));
+
+        TIME_UP_CONFIRM_BUTTON.addEventListener('click', () => {
+            TIME_UP_MODAL.classList.add('hidden');
+            
+            const currentPlayer = players[currentPlayerIndex];
+            currentPlayer.currentRoundScore = 0;
+            currentPlayer.passed = true; 
+
+            nextPlayer();
+        });
+
+        function closeModal(isCorrect) {
+            QUIZ_MODAL.classList.add('hidden');
+            const currentPlayer = players[currentPlayerIndex];
+            
+            const buttonId = QUIZ_MODAL.dataset.buttonId;
+            const buttonElement = document.getElementById(buttonId);
+            
+            if (isCorrect) {
+                currentPlayer.currentRoundScore += 1;
             } else {
-                passBtn.disabled = false;
-                passBtn.textContent = `Passo (${roundScore} punt${roundScore === 1 ? '' : 's'})`;
+                buttonElement.classList.remove('bg-green-200', 'text-green-800');
+                buttonElement.classList.add('bg-red-200', 'text-red-800');
+                
+                currentPlayer.currentRoundScore = 0;
+                currentPlayer.passed = true; 
             }
+            
+            revealedOptionsCount++;
+            PASS_TURN_BUTTON.textContent = `Em planto (${currentPlayer.currentRoundScore})`;
+            nextPlayer();
         }
 
         function nextPlayer() {
-            let nextIndex = (currentPlayerIndex + 1) % players.length;
-            let initialIndex = nextIndex;
-            
-            while (players[nextIndex].passed) {
-                nextIndex = (nextIndex + 1) % players.length;
-                
-                if (nextIndex === initialIndex) {
-                    endRound();
-                    return; 
+            if (revealedOptionsCount >= TOTAL_OPTIONS) {
+                const lastPlayer = players[currentPlayerIndex];
+                if (!lastPlayer.passed) {
+                    lastPlayer.score += lastPlayer.currentRoundScore;
                 }
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                endRound();
+                return;
             }
 
-            currentPlayerIndex = nextIndex;
-            updateScoreboard();
-            updateTurnIndicator(); 
-            updatePassButton();
-        }
-        
-        function playerPasses() {
-            const currentPlayer = players[currentPlayerIndex];
-            
-            currentPlayer.score += currentPlayer.currentRoundScore;
-            currentPlayer.currentRoundScore = 0;
-            currentPlayer.passed = true; // El jugador passa i surt de la ronda amb els punts acumulats
-            
-            const activePlayers = players.filter(p => !p.passed);
-            
-            if (activePlayers.length === 0) {
+            let nextPlayerIndex = -1;
+            let searchCount = 0;
+            let i = (currentPlayerIndex + 1) % players.length;
+
+            while (searchCount < players.length) {
+                if (!players[i].passed) {
+                    nextPlayerIndex = i;
+                    break;
+                }
+                i = (i + 1) % players.length;
+                searchCount++;
+            }
+
+            if (nextPlayerIndex === -1) {
                 endRound();
             } else {
-                nextPlayer();
+                currentPlayerIndex = nextPlayerIndex;
+                updateTurnIndicator();
+                updateScoreboard();
+                startNewTurnTimer();
             }
-        }
-        
-        function startQuiz(data) {
-            if (data.length === 0 || availableQuestionIndices.length === 0) {
-                displayMessage("No hi ha dades disponibles per a començar el joc de preguntes.", true);
-                return;
-            }
-
-            // 1. Reset de la ronda
-            revealedAnswersCount = 0; 
-            activeOptions = [];
-            players.forEach(p => {
-                p.currentRoundScore = 0;
-                p.passed = false;
-            });
-            
-            // 2. Tria un registre
-            const selectedIndexInCsv = availableQuestionIndices.pop(); 
-            const selectedRow = data[selectedIndexInCsv];
-
-            const category = selectedRow[CATEGORY_INDEX] || "SENSE CATEGORIA"; 
-            const question = selectedRow[QUESTION_INDEX] || "Pregunta no disponible";
-            const options = [];
-            
-            OPTION_INDICES.forEach((optionIndex, i) => {
-                const correctIndex = optionIndex + 1;
-                
-                if (selectedRow.length > correctIndex && selectedRow[optionIndex] && selectedRow[correctIndex]) {
-                    options.push({
-                        option: selectedRow[optionIndex],
-                        correctAnswer: selectedRow[correctIndex],
-                        id: `opt-${i}`,
-                        isRevealed: false
-                    });
-                }
-            });
-            
-            if (options.length < 1) {
-                displayMessage(`El registre triat no conté opcions suficients.`, true);
-                return;
-            }
-            
-            shuffleArray(options);
-            activeOptions = options; 
-
-            // 3. Genera el HTML
-            const quizArea = document.getElementById('quiz-area');
-            
-            let col1Html = '';
-            let col2Html = '';
-            
-            for (let i = 0; i < activeOptions.length; i++) {
-                const opt = activeOptions[i];
-                
-                // REVERTIT: Tornat a text-amber-200 (o similar) per la lletra de l'opció.
-                const optionHtml = `
-                    <div id="container-${opt.id}" class="flex items-center justify-between p-3 bg-orange-800 rounded-lg shadow-md border border-orange-700">
-                        <span class="text-sm font-bold text-amber-200 break-words pr-2 flex-1">${opt.option}</span>
-                        <div id="option-${opt.id}" class="flex-shrink-0">
-                            <!-- Botó de disc 3D -->
-                            <div class="option-button" 
-                                 onclick="revealAnswer(this, '${opt.id}', '${opt.correctAnswer.replace(/'/g, "\\'")}')">?</div>
-                        </div>
-                    </div>
-                `;
-
-                if (i < 5) {
-                    col1Html += optionHtml;
-                } else if (i < 10) { 
-                    col2Html += optionHtml;
-                }
-            }
-            
-            const currentPlayer = players[currentPlayerIndex];
-            const roundScore = currentPlayer.currentRoundScore;
-
-            const htmlContent = `
-                <!-- TORN DEL JUGADOR I BOTÓ PASSO COMBINATS (Fons fosc per destacar la instrucció) -->
-                <div id="turn-and-pass-container" class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-3 bg-orange-800 rounded-lg shadow-md border border-orange-700">
-                    <!-- TORN INDICATOR (Left) -->
-                    <div class="text-center sm:text-left flex-1" id="turn-indicator-text-container">
-                        <!-- MODIFICACIÓ CLAU: Nova frase indicadora -->
-                        <h3 id="current-player-turn" class="text-xl font-extrabold text-white">
-                            Et toca, ${currentPlayer.name}!
-                        </h3>
-                    </div>
-
-                    <!-- PASSO BUTTON (Right) -->
-                    <div class="flex flex-col items-center sm:items-end flex-shrink-0 w-full sm:w-auto">
-                        <!-- El missatge "Guardes" s'ha eliminat -->
-                        <button onclick="playerPasses()" id="pass-btn" class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150 w-full sm:w-auto">
-                            Passo (${roundScore} punt${roundScore === 1 ? '' : 's'})
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Contenidor de l'Esfera de la Pregunta i Opcions (Simulació de la Junta) -->
-                <!-- md:items-start per alinear la categoria a dalt -->
-                <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
-                    
-                    <!-- Columna Esquerra d'Opcions -->
-                    <div class="flex flex-col space-y-4 w-full md:w-1/3 order-1 md:order-1">
-                        ${col1Html}
-                    </div>
-
-                    <!-- Contenidor de Categoria i Esfera (Centre) -->
-                    <div class="flex flex-col w-full md:w-1/3 order-2 md:order-2 items-center"> 
-                        <!-- CATEGORIA (Alineat amb la part superior de la columna) -->
-                        <p class="text-sm font-semibold text-white mb-2 uppercase tracking-wider text-shadow-sm">
-                            ${category}
-                        </p>
-                        
-                        <div class="question-sphere">
-                            <p class="text-xl md:text-2xl font-extrabold">
-                                ${question}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Columna Dreta d'Opcions -->
-                    <div class="flex flex-col space-y-4 w-full md:w-1/3 order-3 md:order-3">
-                        ${col2Html}
-                    </div>
-                </div>
-            `;
-
-            quizArea.innerHTML = htmlContent;
-            updateScoreboard(); 
-            // Cridar updateTurnIndicator aquí també assegura que la frase es mostra immediatament
-            updateTurnIndicator(); 
         }
 
         function endRound() {
-            let maxScoreAchieved = 0;
+            stopTimer();
+            const maxScore = Math.max(...players.map(p => p.score));
+            if (maxScore >= WINNING_SCORE) {
+                endGame(false);
+            } else {
+                setTimeout(startQuiz, 1500);
+            }
+        }
+
+        function endGame(isForced) {
+            stopTimer();
+            const winner = players.reduce((max, player) => player.score > max.score ? player : max, players[0]);
             
-            players.forEach(p => {
-                p.score += p.currentRoundScore;
-                p.currentRoundScore = 0;
-                if (p.score >= WINNING_SCORE) {
-                    maxScoreAchieved = Math.max(maxScoreAchieved, p.score);
+            if (isForced && availableQuestionIndices.length === 0) {
+                document.getElementById('game-over-title').textContent = "S'han acabat les preguntes!";
+                document.getElementById('game-over-winner').textContent = `El guanyador final és ${winner.name} amb ${winner.score} punts!`;
+            } else {
+                document.getElementById('game-over-winner').textContent = `El guanyador és ${winner.name} amb ${winner.score} punts!`;
+            }
+            GAME_OVER_MODAL.classList.remove('hidden');
+        }
+
+        RESTART_GAME_BUTTON.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+
+        // --- 4. LÒGICA D'INTERFÍCIE (UI) ---
+
+        function updateScoreboard() {
+            SCOREBOARD.innerHTML = '';
+            const maxScore = Math.max(...players.map(p => p.score));
+
+            players.forEach((player, index) => {
+                const scoreSpan = document.createElement('span');
+                let scoreText = `${player.name}: ${player.score}`;
+                
+                if (player.currentRoundScore > 0) {
+                    scoreText += ` (+${player.currentRoundScore})`;
                 }
-            });
-            updateScoreboard();
-
-            if (maxScoreAchieved >= WINNING_SCORE) {
-                endGame();
-                return; 
-            }
-
-            const quizArea = document.getElementById('quiz-area');
-            quizArea.innerHTML = `
-                <div class="text-center p-8 bg-orange-700 rounded-xl border-2 border-orange-800 shadow-md">
-                    <p class="text-xl font-bold text-white">Ronda finalitzada! S'està triant una nova pregunta...</p>
-                    <p class="text-lg font-semibold text-amber-200 mt-2">Puntuacions actualitzades.</p>
-                </div>
-            `;
-            
-            const nextStarterIndex = (currentPlayerIndex + 1) % players.length;
-
-            setTimeout(() => {
-                currentPlayerIndex = nextStarterIndex; 
-                startQuiz(csvData);
-            }, 1500);
-        }
-
-        function endGame() {
-            const quizArea = document.getElementById('quiz-area');
-
-            let winner = players[0];
-            let maxScore = -1;
-            
-            players.forEach(p => {
-                if (p.score > maxScore) {
-                    maxScore = p.score;
-                    winner = p;
+                
+                if (player.score === maxScore && maxScore > 0) {
+                    scoreText = `👑 ${scoreText}`;
                 }
+
+                scoreSpan.textContent = scoreText;
+                
+                let styles = 'text-base font-bold py-2 px-4 rounded-full shadow-md transition-all duration-150';
+
+                if (player.passed) {
+                    styles += ' bg-red-900 text-red-300 line-through';
+                } else if (index === currentPlayerIndex) {
+                    styles += ' bg-green-700 text-green-200 border-2 border-yellow-300 transform scale-110 z-10';
+                } else {
+                    styles += ' bg-green-500 text-green-900';
+                }
+                
+                scoreSpan.className = styles;
+                SCOREBOARD.appendChild(scoreSpan);
             });
-            
-            let finalScores = players.map(p => `${p.name}: ${p.score} punts`).join(', ');
-
-            quizArea.innerHTML = `
-                <div class="text-center p-8 bg-orange-700 rounded-xl border-2 border-orange-800 shadow-xl">
-                    <h2 class="text-3xl font-extrabold text-white mb-4">🎉 FI DE LA PARTIDA! 🎉</h2>
-                    <p class="text-xl font-bold text-amber-200 mb-6">
-                        El GUANYADOR és ${winner.name} amb ${winner.score} punts!
-                    </p>
-                    <div class="p-4 bg-orange-800 rounded-lg border border-orange-700">
-                        <h3 class="text-lg font-semibold text-amber-200 mb-2">Puntuacions Finals:</h3>
-                        <p class="text-amber-300 text-sm md:text-base">${finalScores}</p>
-                    </div>
-                    <button onclick="window.location.reload()" 
-                            class="mt-6 px-6 py-3 bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-800 transition duration-150">
-                        Començar Nova Partida
-                    </button>
-                </div>
-            `;
         }
 
-        // --- Gestió del Modal i Puntuació ---
-
-        function revealAnswer(buttonElement, optionId, correctAnswer) {
-            if (players[currentPlayerIndex].passed) {
-                return; 
+        function updateTurnIndicator() {
+            const player = players[currentPlayerIndex];
+            if (player.passed) {
+                TURN_INDICATOR.textContent = `${player.name} està fora de la ronda.`;
+                TURN_INDICATOR.className = 'text-xl md:text-2xl font-extrabold text-red-400';
+                PASS_TURN_BUTTON.classList.add('hidden'); 
+            } else {
+                TURN_INDICATOR.textContent = `Et toca, ${player.name}!`;
+                TURN_INDICATOR.className = 'text-xl md:text-2xl font-extrabold text-orange-400';
+                
+                PASS_TURN_BUTTON.classList.remove('hidden');
+                PASS_TURN_BUTTON.textContent = `Em planto (${player.currentRoundScore})`;
             }
+        }
+        
+        // --- 5. FUNCIONS DEL TEMPORITZADOR ---
+        
+        TOGGLE_TIMER_BUTTON.addEventListener('click', () => {
+            isTimerEnabled = !isTimerEnabled;
+            updateTimerToggleButtonState();
 
-            const optionObj = activeOptions.find(opt => opt.id === optionId);
-            if (optionObj) {
-                if (optionObj.isRevealed) return; 
-                optionObj.isRevealed = true;
+            if (isTimerEnabled) {
+                startNewTurnTimer();
+            } else {
+                stopTimer();
+                TIMER_DISPLAY.classList.add('hidden');
             }
+        });
 
-            activeQuestionId = optionId;
-            
-            const answerText = document.getElementById('correct-answer-text');
-            // MODIFICACIÓ: Només mostrem la resposta, sense cometes ni text addicional
-            answerText.textContent = correctAnswer;
-            
-            const parentDiv = document.getElementById(`option-${optionId}`);
-            
-            buttonElement.remove(); 
-            
-            parentDiv.innerHTML = `
-                <span id="response-${optionId}" 
-                      class="text-sm font-bold text-gray-900 p-1 rounded bg-gray-100 px-3 transition duration-300">
-                    ...
-                </span>
-            `;
-            
-            document.getElementById(`container-${optionId}`).classList.add('revealed');
-
-            const modal = document.getElementById('quiz-modal');
-            modal.style.display = 'flex';
+        function updateTimerToggleButtonState() {
+            if (isTimerEnabled) {
+                TOGGLE_TIMER_BUTTON.classList.add('bg-red-600');
+                TOGGLE_TIMER_BUTTON.classList.remove('bg-blue-600');
+                TIMER_DISPLAY.classList.remove('hidden');
+            } else {
+                TOGGLE_TIMER_BUTTON.classList.add('bg-blue-600');
+                TOGGLE_TIMER_BUTTON.classList.remove('bg-red-600');
+                TIMER_DISPLAY.classList.add('hidden');
+            }
         }
 
-        function closeModal(wasCorrect) {
-            const modal = document.getElementById('quiz-modal');
-            modal.style.display = 'none';
+        function startNewTurnTimer() {
+            stopTimer();
+            if (!isTimerEnabled) return;
 
-            if (!activeQuestionId) return; 
+            timeLeft = TIMER_DURATION;
+            updateTimerDisplay();
+            TIMER_DISPLAY.classList.remove('timer-warning');
 
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= TIMER_WARNING) {
+                    TIMER_DISPLAY.classList.add('timer-warning');
+                }
+
+                if (timeLeft <= 0) {
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            if (isTimerEnabled) {
+                TIMER_DISPLAY.classList.remove('timer-warning');
+            }
+        }
+
+        function updateTimerDisplay() {
+            if (isTimerEnabled) {
+                TIMER_DISPLAY.textContent = `${timeLeft}s`;
+            }
+        }
+
+        function handleTimeUp() {
+            stopTimer(); 
             const currentPlayer = players[currentPlayerIndex];
-            const responseElement = document.getElementById(`response-${activeQuestionId}`);
             
-            // La resposta ja està al textContent de #correct-answer-text (sense prefix ni cometes)
-            const correctAnswer = document.getElementById('correct-answer-text').textContent;
-            responseElement.textContent = correctAnswer; 
-
-            responseElement.classList.remove('bg-gray-100', 'text-gray-900');
-            
-            if (wasCorrect) {
-                currentPlayer.currentRoundScore += 1;
-                responseElement.classList.add('bg-green-300', 'text-green-900');
-            } else {
-                // Si falla, el jugador es marca com a passat i la seva puntuació de ronda es reseteja
-                currentPlayer.currentRoundScore = 0;
-                currentPlayer.passed = true; 
-                responseElement.classList.add('bg-red-300', 'text-red-900');
-            }
-            
-            revealedAnswersCount++; 
-            activeQuestionId = null; 
-
-            updateScoreboard();
-            updateTurnIndicator();
-            updatePassButton();
-
-            const allOptionsRevealed = revealedAnswersCount >= activeOptions.length;
-            
-            if (allOptionsRevealed) {
-                endRound(); 
-            } else {
-                // Passa al següent jugador, saltant els que ja han passat
-                nextPlayer(); 
-            }
+            TIME_UP_MESSAGE.textContent = `T'has quedat sense temps, ${currentPlayer.name}!`;
+            TIME_UP_MODAL.classList.remove('hidden');
         }
+
     </script>
 </body>
 </html>
