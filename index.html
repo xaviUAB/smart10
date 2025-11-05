@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART 10 Digital (Layout Cercle V9)</title>
+    <title>SMART 10 Digital (Layout Cercle V11)</title>
     <!-- Inclou Tailwind CSS per a l'estil -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -140,8 +140,9 @@
                     </div>
 
                     <div class="flex flex-col items-center order-1 md:order-2">
-                        <div id="category-display" class="text-center text-sm font-semibold text-white mb-2">
-                            <!-- Categoria de la pregunta -->
+                        <!-- CANVIAT: Text blanc i més petit -->
+                        <div id="category-display" class="text-center text-xs md:text-sm font-extrabold text-white mb-2">
+                            <!-- Nom de la Categoria -->
                         </div>
                         
                         <!-- Cercle de Pregunta Perfecte (w-h iguals) -->
@@ -253,7 +254,7 @@
         const TIMER_DISPLAY = document.getElementById('timer-display');
         const ENABLE_TIMER_CHECKBOX = document.getElementById('enable-timer-checkbox');
         const TOGGLE_TIMER_BUTTON = document.getElementById('toggle-timer-button');
-        const TIMER_DURATION = 30; // CANVIAT: La durada del temporitzador és ara de 30 segons
+        const TIMER_DURATION = 30; 
         const TIMER_WARNING = 10; 
 
         let csvData = [];
@@ -265,7 +266,38 @@
         let isTimerEnabled = false;
         let timerInterval = null;
         let timeLeft = TIMER_DURATION;
+        let audioContext = null; 
 
+        // --- FUNCIONS D'ÀUDIO ---
+
+        function playBeep() {
+            // Inicialitza AudioContext si encara no s'ha fet
+            if (!audioContext) {
+                // Utilitzem window.AudioContext o window.webkitAudioContext per a compatibilitat
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            // Configuració del so
+            oscillator.type = 'sine'; // Ona sinusoïdal
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // 440 Hz (La)
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+
+            // Connecta: Oscillator -> Gain -> Destination (altaveus)
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Sequència del so (atac ràpid, caiguda ràpida)
+            const duration = 0.15; // 150 ms de durada
+            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01); // Puja el volum
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration); // Baixa el volum a zero
+
+            // Inicia i atura l'oscil·lador
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
 
         // --- 1. LÒGICA DE CONFIGURACIÓ ---
         
@@ -451,7 +483,8 @@
             }
 
             QUESTION_TEXT.textContent = questionData[QUESTION_INDEX];
-            CATEGORY_DISPLAY.textContent = `Categoria: ${questionData[CATEGORY_INDEX]}`;
+            // Actualitzat: Mostrar només la categoria, text blanc i més petit
+            CATEGORY_DISPLAY.textContent = questionData[CATEGORY_INDEX]; 
 
             let options = [];
             for (let i = 0; i < TOTAL_OPTIONS; i++) {
@@ -726,7 +759,12 @@
             updateTimerToggleButtonState();
 
             if (isTimerEnabled) {
-                startNewTurnTimer();
+                // Reinicia el temporitzador només si estem en una ronda activa
+                if (!GAME_AREA.classList.contains('hidden')) {
+                    startNewTurnTimer();
+                } else {
+                    TIMER_DISPLAY.textContent = `${TIMER_DURATION}s`;
+                }
             } else {
                 stopTimer();
                 TIMER_DISPLAY.classList.add('hidden');
@@ -757,11 +795,12 @@
                 timeLeft--;
                 updateTimerDisplay();
 
-                if (timeLeft <= TIMER_WARNING) {
+                if (timeLeft === TIMER_WARNING) {
+                    playBeep(); // ALERTA SONORA
                     TIMER_DISPLAY.classList.add('timer-warning');
-                }
-
-                if (timeLeft <= 0) {
+                } else if (timeLeft < TIMER_WARNING && timeLeft > 0) {
+                    TIMER_DISPLAY.classList.add('timer-warning');
+                } else if (timeLeft <= 0) {
                     handleTimeUp();
                 }
             }, 1000);
