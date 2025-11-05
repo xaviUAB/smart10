@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART 10 Digital (Layout Cercle V7)</title>
+    <title>SMART 10 Digital (Layout Cercle V9)</title>
     <!-- Inclou Tailwind CSS per a l'estil -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -20,7 +20,7 @@
             transform: scale(1);
             /* Estil del text '?' (Blanc) */
             @apply text-white text-2xl font-bold;
-            color: white; /* CANVIAT: Força el color blanc per al '?' */
+            color: white; /* Força el color blanc per a l'interrogant */
         }
         .answer-disc:hover {
             background-color: #2d3748; /* gray-800 */
@@ -82,7 +82,7 @@
                 </div>
                 <div class="flex items-center justify-center space-x-2 mt-4">
                     <input type="checkbox" id="enable-timer-checkbox" class="h-5 w-5 rounded text-blue-600 focus:ring-blue-500">
-                    <label for="enable-timer-checkbox" class="text-white font-bold">Activar Temporitzador (45s)</label>
+                    <label for="enable-timer-checkbox" class="text-white font-bold">Activar Temporitzador (30s)</label>
                 </div>
                 <div class="mt-6">
                     <h3 class="text-lg font-bold text-amber-200 mb-3">Tria un o més conjunts de preguntes:</h3>
@@ -110,10 +110,26 @@
         <!-- ====== 2. ÀREA DE JOC ====== -->
         <div id="game-area" class="hidden">
             
+            <!-- 1. Scoreboard -->
             <div id="scoreboard" class="flex flex-wrap justify-center gap-2 mb-6 p-4 bg-red-900 bg-opacity-75 rounded-lg shadow-inner">
                 <!-- Marcadors -->
             </div>
             
+            <!-- 2. ÀREA DE TORN/PASSAR -->
+            <div class="turn-indicator-container flex flex-col md:flex-row justify-between items-center bg-red-900 bg-opacity-75 p-3 rounded-lg mb-6 shadow-inner">
+                <div class="flex items-center">
+                    <span id="turn-indicator" class="text-xl md:text-2xl font-extrabold text-orange-500">
+                        Et toca, Jugador!
+                    </span>
+                    <div id="timer-display" class="hidden ml-4 text-2xl font-bold text-white">30s</div>
+                </div>
+                
+                <button id="pass-turn-button" class="w-full md:w-auto mt-3 md:mt-0 bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-red-800 transform hover:scale-105 transition-transform duration-150">
+                    Em planto (0)
+                </button>
+            </div>
+
+            <!-- 3. ÀREA DE PREGUNTA I OPCIONS -->
             <div class="bg-orange-700 p-4 md:p-6 rounded-lg shadow-inner border-b-4 border-orange-900">
                 
                 <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 my-6">
@@ -128,7 +144,7 @@
                             <!-- Categoria de la pregunta -->
                         </div>
                         
-                        <!-- CANVIAT: Mida fixa (w-56 h-56 / w-64 h-64) per a un cercle perfecte -->
+                        <!-- Cercle de Pregunta Perfecte (w-h iguals) -->
                         <div class="relative w-56 h-56 md:w-64 md:h-64 bg-white rounded-full flex items-center justify-center p-8 shadow-xl border-4 border-orange-300">
                             <p id="question-text" class="text-xl md:text-2xl font-bold text-gray-900 text-center leading-tight">
                                 <!-- Text de la pregunta -->
@@ -140,19 +156,6 @@
                     <div id="options-col-2" class="space-y-4 w-full md:w-1/3 order-3 md:order-3">
                         <!-- JS fills this -->
                     </div>
-                </div>
-                
-                <div class="turn-indicator-container flex flex-col md:flex-row justify-between items-center bg-red-900 bg-opacity-75 p-3 rounded-lg mt-6 shadow-inner">
-                    <div class="flex items-center">
-                        <span id="turn-indicator" class="text-xl md:text-2xl font-extrabold text-orange-500">
-                            Et toca, Jugador!
-                        </span>
-                        <div id="timer-display" class="hidden ml-4 text-2xl font-bold text-white">45s</div>
-                    </div>
-                    
-                    <button id="pass-turn-button" class="w-full md:w-auto mt-3 md:mt-0 bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-red-800 transform hover:scale-105 transition-transform duration-150">
-                        Em planto (0)
-                    </button>
                 </div>
             </div>
         </div>
@@ -250,7 +253,7 @@
         const TIMER_DISPLAY = document.getElementById('timer-display');
         const ENABLE_TIMER_CHECKBOX = document.getElementById('enable-timer-checkbox');
         const TOGGLE_TIMER_BUTTON = document.getElementById('toggle-timer-button');
-        const TIMER_DURATION = 45; 
+        const TIMER_DURATION = 30; // CANVIAT: La durada del temporitzador és ara de 30 segons
         const TIMER_WARNING = 10; 
 
         let csvData = [];
@@ -484,13 +487,19 @@
             }
         }
 
+        /**
+         * Lògica de l'element d'opció per alinear-se correctament en mòbil (text a l'esquerra, botó a la dreta)
+         * i simètric en escriptori.
+         */
         function createOptionElement(opt, id, position = 'left') {
             
             const optionDiv = document.createElement('div');
-            optionDiv.className = 'flex items-center space-x-3';
+            // Default (Mobile) layout for all columns: Text | Button (flex-row) with space-x-3
+            optionDiv.className = 'flex items-center space-x-3'; 
 
             const text = document.createElement('span');
-            text.className = 'flex-1 text-base font-bold text-yellow-300'; 
+            // Text sempre a l'esquerra per defecte (mòbil)
+            text.className = 'flex-1 text-base font-bold text-yellow-300 text-left'; 
             text.textContent = opt.optionText;
 
             const button = document.createElement('button');
@@ -499,15 +508,16 @@
             button.textContent = '?';
             button.onclick = () => revealAnswer(opt.answerText, button, position); 
 
+            // Ordre per defecte DOM (Text, Button) - Això dicta la vista mòbil
+            optionDiv.appendChild(text); 
+            optionDiv.appendChild(button); 
+
             if (position === 'right') {
-                text.classList.add('text-right');
-                optionDiv.appendChild(button);
-                optionDiv.appendChild(text);
-            } else {
-                text.classList.add('text-left');
-                optionDiv.appendChild(text);
-                optionDiv.appendChild(button);
-            }
+                // Sobre-escriptura per a Escriptori (md:): Invertir l'ordre visual i l'espaiat per la simetria
+                optionDiv.classList.add('md:flex-row-reverse', 'md:space-x-reverse');
+                // Alineació del text a la dreta només a partir d'escriptori
+                text.classList.add('md:text-right');
+            } 
             
             const wrapperDiv = document.createElement('div');
             wrapperDiv.className = 'bg-red-900 bg-opacity-75 p-3 rounded-lg shadow-md'; 
@@ -519,7 +529,7 @@
 
 
         /**
-         * CANVIAT: Lògica de revelació (w-auto, treu break-words)
+         * Botó amb amplada automàtica (w-auto)
          */
         function revealAnswer(answerText, buttonElement, position) {
             stopTimer();
@@ -528,21 +538,20 @@
             buttonElement.textContent = answerText;
             
             buttonElement.classList.remove('answer-disc');
-            // CANVIAT: Treu w-10 (amplada fixa)
+            // Treu text-white, text-2xl, w-10 (amplada fixa inicial)
             buttonElement.classList.remove('text-white', 'text-2xl', 'w-10'); 
             
             buttonElement.classList.add(
-                'bg-green-200',        // Verd claret
-                'text-green-800',       // Verd fosc
-                'text-sm',              // Mida de lletra per respostes
+                'bg-green-200',        
+                'text-green-800',       
+                'text-sm',              
                 'font-bold',
-                'h-10',                 // Mateixa alçada
-                'min-w-[2.5rem]',       // Amplada mínima (com l'antic w-10)
-                'w-auto',               // CANVIAT: Amplada automàtica
-                'px-3',                 // Padding
+                'h-10',                 
+                'min-w-[2.5rem]',       
+                'w-auto',               // Amplada automàtica per expandir-se amb el text
+                'px-3',                 
                 'shadow-inner',
-                'rounded-lg'            // Arrodonit
-                // ELIMINAT: 'break-words' (permet expansió)
+                'rounded-lg'            
             );
             
             CORRECT_ANSWER_TEXT.textContent = answerText;
