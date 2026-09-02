@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART 10 Digital (Layout Cercle V11)</title>
+    <title>SMART 10 Digital (Layout Cercle V12)</title>
     <!-- Inclou Tailwind CSS per a l'estil -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -69,12 +69,16 @@
             <div class="bg-orange-700 p-6 rounded-lg shadow-inner border-b-4 border-orange-900">
                 <h2 class="text-2xl font-bold text-amber-200 mb-4 text-center border-b border-orange-500 pb-2">Configuració de la Partida</h2>
                 <div class="mb-4">
-                    <label for="player-count" class="block text-lg font-bold text-white mb-2">Quants jugadors? (1-4)</label>
+                    <label for="player-count" class="block text-lg font-bold text-white mb-2">Nombre de participants (1-8)</label>
                     <select id="player-count" class="w-full p-3 rounded-lg bg-white text-gray-900 font-bold focus:outline-none focus:ring-4 focus:ring-amber-300">
-                        <option value="1" selected>1 Jugador</option>
-                        <option value="2">2 Jugadors</option>
-                        <option value="3">3 Jugadors</option>
-                        <option value="4">4 Jugadors</option>
+                        <option value="1" selected>1 participant</option>
+                        <option value="2">2 participants</option>
+                        <option value="3">3 participants</option>
+                        <option value="4">4 participants</option>
+                        <option value="5">5 participants</option>
+                        <option value="6">6 participants</option>
+                        <option value="7">7 participants</option>
+                        <option value="8">8 participants</option>
                     </select>
                 </div>
                 <div id="player-names-container" class="space-y-3 mb-6">
@@ -119,7 +123,7 @@
             <div class="turn-indicator-container flex flex-col md:flex-row justify-between items-center bg-red-900 bg-opacity-75 p-3 rounded-lg mb-6 shadow-inner">
                 <div class="flex items-center">
                     <span id="turn-indicator" class="text-xl md:text-2xl font-extrabold text-orange-500">
-                        Et toca, Jugador!
+                        Et toca participar!
                     </span>
                     <div id="timer-display" class="hidden ml-4 text-2xl font-bold text-white">30s</div>
                 </div>
@@ -140,7 +144,7 @@
                     </div>
 
                     <div class="flex flex-col items-center order-1 md:order-2">
-                        <!-- CANVIAT: Text blanc i més petit -->
+                        <!-- Categoria sense text estàtic -->
                         <div id="category-display" class="text-center text-xs md:text-sm font-extrabold text-white mb-2">
                             <!-- Nom de la Categoria -->
                         </div>
@@ -191,7 +195,7 @@
         <div class="bg-white rounded-lg shadow-2xl p-8 max-w-lg w-full text-center border-4 border-orange-500">
             <h2 id="game-over-title" class="text-4xl font-extrabold text-orange-600 mb-6">Partida Finalitzada!</h2>
             <p id="game-over-winner" class="text-2xl font-semibold text-gray-900 mb-8">
-                <!-- El guanyador és [Jugador]! -->
+                <!-- La victòria és per a [Participant]! -->
             </p>
             <button id="restart-game-button" class="bg-blue-600 text-white text-xl font-bold py-4 px-10 rounded-lg shadow-lg hover:bg-blue-700 transform hover:scale-105 transition-transform duration-150">
                 Tornar a Jugar
@@ -203,10 +207,10 @@
     <div id="time-up-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 max-w-lg w-full text-center border-4 border-red-500">
             <p id="time-up-message" class="text-2xl font-extrabold text-gray-900 mb-6">
-                <!-- T'has quedat sense temps, [Jugador]! -->
+                <!-- T'has quedat sense temps, [Participant]! -->
             </p>
             <button id="time-up-confirm-button" class="bg-red-600 text-white text-lg font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-700 transform hover:scale-105 transition-transform duration-150">
-                Eliminat de la ronda
+                Fora de la ronda
             </button>
         </div>
     </div>
@@ -271,30 +275,24 @@
         // --- FUNCIONS D'ÀUDIO ---
 
         function playBeep() {
-            // Inicialitza AudioContext si encara no s'ha fet
             if (!audioContext) {
-                // Utilitzem window.AudioContext o window.webkitAudioContext per a compatibilitat
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
 
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
-            // Configuració del so
-            oscillator.type = 'sine'; // Ona sinusoïdal
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // 440 Hz (La)
+            oscillator.type = 'sine'; 
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); 
             gainNode.gain.setValueAtTime(0, audioContext.currentTime);
 
-            // Connecta: Oscillator -> Gain -> Destination (altaveus)
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
 
-            // Sequència del so (atac ràpid, caiguda ràpida)
-            const duration = 0.15; // 150 ms de durada
-            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01); // Puja el volum
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration); // Baixa el volum a zero
+            const duration = 0.15; 
+            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01); 
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration); 
 
-            // Inicia i atura l'oscil·lador
             oscillator.start();
             oscillator.stop(audioContext.currentTime + duration);
         }
@@ -353,13 +351,14 @@
             updatePlayerNameInputs(e.target.value);
         });
 
+        // Actualitzat amb un format inclusiu neutral de participant
         function updatePlayerNameInputs(count) {
             PLAYER_NAMES_CONTAINER.innerHTML = '';
             for (let i = 1; i <= count; i++) {
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.id = `player-name-${i}`;
-                input.placeholder = `Nom del Jugador ${i}`;
+                input.placeholder = `Nom de la persona participant ${i}`;
                 input.className = 'w-full p-3 rounded-lg bg-gray-100 text-gray-900 font-bold focus:outline-none focus:ring-4 focus:ring-amber-300';
                 input.required = true;
                 PLAYER_NAMES_CONTAINER.appendChild(input);
@@ -382,7 +381,7 @@
             players = [];
             const playerCount = PLAYER_COUNT_SELECT.value;
             for (let i = 1; i <= playerCount; i++) {
-                const name = document.getElementById(`player-name-${i}`).value || `Jugador ${i}`;
+                const name = document.getElementById(`player-name-${i}`).value || `Participant ${i}`;
                 players.push({ name: name, score: 0, currentRoundScore: 0, passed: false });
             }
             
@@ -483,7 +482,6 @@
             }
 
             QUESTION_TEXT.textContent = questionData[QUESTION_INDEX];
-            // Actualitzat: Mostrar només la categoria, text blanc i més petit
             CATEGORY_DISPLAY.textContent = questionData[CATEGORY_INDEX]; 
 
             let options = [];
@@ -520,18 +518,12 @@
             }
         }
 
-        /**
-         * Lògica de l'element d'opció per alinear-se correctament en mòbil (text a l'esquerra, botó a la dreta)
-         * i simètric en escriptori.
-         */
         function createOptionElement(opt, id, position = 'left') {
             
             const optionDiv = document.createElement('div');
-            // Default (Mobile) layout for all columns: Text | Button (flex-row) with space-x-3
             optionDiv.className = 'flex items-center space-x-3'; 
 
             const text = document.createElement('span');
-            // Text sempre a l'esquerra per defecte (mòbil)
             text.className = 'flex-1 text-base font-bold text-yellow-300 text-left'; 
             text.textContent = opt.optionText;
 
@@ -541,14 +533,11 @@
             button.textContent = '?';
             button.onclick = () => revealAnswer(opt.answerText, button, position); 
 
-            // Ordre per defecte DOM (Text, Button) - Això dicta la vista mòbil
             optionDiv.appendChild(text); 
             optionDiv.appendChild(button); 
 
             if (position === 'right') {
-                // Sobre-escriptura per a Escriptori (md:): Invertir l'ordre visual i l'espaiat per la simetria
                 optionDiv.classList.add('md:flex-row-reverse', 'md:space-x-reverse');
-                // Alineació del text a la dreta només a partir d'escriptori
                 text.classList.add('md:text-right');
             } 
             
@@ -560,18 +549,12 @@
             return wrapperDiv;
         }
 
-
-        /**
-         * Botó amb amplada automàtica (w-auto)
-         */
         function revealAnswer(answerText, buttonElement, position) {
             stopTimer();
             buttonElement.disabled = true;
             
             buttonElement.textContent = answerText;
-            
             buttonElement.classList.remove('answer-disc');
-            // Treu text-white, text-2xl, w-10 (amplada fixa inicial)
             buttonElement.classList.remove('text-white', 'text-2xl', 'w-10'); 
             
             buttonElement.classList.add(
@@ -581,7 +564,7 @@
                 'font-bold',
                 'h-10',                 
                 'min-w-[2.5rem]',       
-                'w-auto',               // Amplada automàtica per expandir-se amb el text
+                'w-auto',               
                 'px-3',                 
                 'shadow-inner',
                 'rounded-lg'            
@@ -690,9 +673,9 @@
             
             if (isForced && availableQuestionIndices.length === 0) {
                 document.getElementById('game-over-title').textContent = "S'han acabat les preguntes!";
-                document.getElementById('game-over-winner').textContent = `El guanyador final és ${winner.name} amb ${winner.score} punts!`;
+                document.getElementById('game-over-winner').textContent = `La victòria final és de ${winner.name} amb ${winner.score} punts!`;
             } else {
-                document.getElementById('game-over-winner').textContent = `El guanyador és ${winner.name} amb ${winner.score} punts!`;
+                document.getElementById('game-over-winner').textContent = `La victòria és de ${winner.name} amb ${winner.score} punts!`;
             }
             GAME_OVER_MODAL.classList.remove('hidden');
         }
@@ -744,7 +727,7 @@
                 TURN_INDICATOR.className = 'text-xl md:text-2xl font-extrabold text-red-400';
                 PASS_TURN_BUTTON.classList.add('hidden'); 
             } else {
-                TURN_INDICATOR.textContent = `Et toca, ${player.name}!`;
+                TURN_INDICATOR.textContent = `Et toca participar, ${player.name}!`;
                 TURN_INDICATOR.className = 'text-xl md:text-2xl font-extrabold text-orange-400';
                 
                 PASS_TURN_BUTTON.classList.remove('hidden');
@@ -759,7 +742,6 @@
             updateTimerToggleButtonState();
 
             if (isTimerEnabled) {
-                // Reinicia el temporitzador només si estem en una ronda activa
                 if (!GAME_AREA.classList.contains('hidden')) {
                     startNewTurnTimer();
                 } else {
